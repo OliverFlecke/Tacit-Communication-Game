@@ -3,20 +3,25 @@ var fs = require('fs');
 var path = require('path');
 
 // Import Tau Prolog core and create a session
-var pl = require("../libs/core.js");
-require("../libs/lists.js")(pl);
-require("../libs/random.js")(pl);
-var session = pl.create(1000);
+var pl = require("../lib/core.js");
+require("../lib/lists.js")(pl);
+require("../lib/random.js")(pl);
 
-// Load the program
-let filePath = "./src/prolog/test.pl";
-let program = fs.readFileSync(filePath, {encoding: 'utf-8'});
-session.consult(program);
+exports.execute = function execute(filePath, query) {
+    var session = pl.create(1000);
 
-let item = process.argv[2];
+    // Load the program
+    let program = fs.readFileSync(filePath, {encoding: 'utf-8'});
+    session.consult(program);
 
-// Query the goal
-session.query(item);
+    // Query the goal
+    session.query(query);
 
-// Show answers
-session.answers(x => console.log(pl.format_answer(x)));
+    // Show answers
+    // session.answers(x => console.log(pl.format_answer(x)));
+    // session.answers(x => pl.format_answer(x));
+    let answers = [];
+    session.answers(x => answers.push(pl.format_answer(x)));
+    // session.answers(x => answers.push(x));
+    return answers;
+}
