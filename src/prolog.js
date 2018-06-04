@@ -17,11 +17,14 @@ exports.execute = function execute(filePath, query) {
     // Query the goal
     session.query(query);
 
-    // Show answers
-    // session.answers(x => console.log(pl.format_answer(x)));
-    // session.answers(x => pl.format_answer(x));
     let answers = [];
-    session.answers(x => answers.push(pl.format_answer(x)));
-    // session.answers(x => answers.push(x));
+    session.answers(x => {
+        if (x['links']) {
+            answers.push(pl.format_answer(x));
+        }
+        else {
+            answers.push(x)
+        }
+    });
     return answers;
 }
