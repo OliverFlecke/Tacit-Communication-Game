@@ -19,7 +19,7 @@ exports.execute = function execute(filePath, query) {
 
     let answers = [];
     session.answers(x => {
-        if (x['links']) {
+        if (x.links) {
             answers.push(pl.format_answer(x));
         }
         else {

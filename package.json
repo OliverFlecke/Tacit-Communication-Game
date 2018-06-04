@@ -1,10 +1,12 @@
 {
-  "name": "tacit_communication_game",
-  "version": "1.0.0",
-  "description": "The tacit communication game",
-  "main": "src/index.js",
-  "scripts": {
-        "test": "jest"
+    "name": "tacit_communication_game",
+    "version": "1.0.0",
+    "description": "The tacit communication game",
+    "main": "src/index.ts",
+    "scripts": {
+        "test": "jest",
+        "start": "react-scripts-ts start",
+        "build": "react-scripts-ts build"
     },
     "jest": {
         "moduleFileExtensions": [
@@ -19,17 +21,23 @@
             "**/tests/*.(ts|tsx)"
         ]
     },
-  "author": "Oliver Fleckenstein",
-  "license": "ISC",
-  "dependencies": {
-    "jquery": "^3.3.1"
-  },
-  "devDependencies": {
-    "@types/jest": "^23.0.0",
-    "jest": "^23.1.0",
-    "jest-cli": "^23.1.0",
-    "jsdom": "^11.11.0",
-    "node-gyp": "^3.6.2",
-    "ts-jest": "^22.4.6"
-  }
+    "author": "Oliver Fleckenstein",
+    "license": "ISC",
+    "dependencies": {
+        "react": "^16.4.0",
+        "react-dom": "^16.4.0",
+        "react-scripts-ts": "^2.16.0"
+    },
+    "devDependencies": {
+        "@types/jest": "^23.0.0",
+        "@types/node": "^10.3.0",
+        "@types/react": "^16.3.16",
+        "@types/react-dom": "^16.0.5",
+        "typescript": "^2.9.1",
+        "jest": "^23.1.0",
+        "jest-cli": "^23.1.0",
+        "jsdom": "^11.11.0",
+        "ts-jest": "^22.4.6",
+        "node-gyp": "^3.6.2"
+    }
 }
