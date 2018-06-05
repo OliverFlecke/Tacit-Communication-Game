@@ -1,3 +1,5 @@
+// Load in all the necessary agent types.
+let receiver = require('src/prolog/receiver.pl');
 // To read files
 var fs = require('fs');
 var path = require('path');
@@ -7,15 +9,19 @@ var pl = require("./lib/core.js");
 require("./lib/lists.js")(pl);
 require("./lib/random.js")(pl);
 
-exports.execute = function execute(filePath, query) {
+exports.execute = function execute(agent, query) {
     var session = pl.create(1000);
 
     // Load the program
-    let text = readFile(filePath);
-    console.log(text);
-    session.consult(text);
-    // let program = fs.readFileSync(filePath, {encoding: 'utf-8'});
-    // session.consult(program);
+    let program = '';
+    switch (agent) {
+        case 'receiver':
+            program = readFile(receiver);
+            break;
+        default:
+            break;
+    }
+    session.consult(program);
 
     // Query the goal
     session.query(query);

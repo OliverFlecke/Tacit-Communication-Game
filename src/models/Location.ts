@@ -47,7 +47,6 @@ export default class Location {
         let locations: Location[] = [];
         let currentLocation = new Location(2,2);
         actions.forEach(action => {
-
             currentLocation = this.getNextLocation(currentLocation, action);
             locations.push(currentLocation);
         });

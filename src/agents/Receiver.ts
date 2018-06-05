@@ -1,10 +1,11 @@
 import * as prolog from '../prolog';
-import IAgent from 'src/agents/Agent';
-import Location from '../models/Location';
+import IAgent from 'src/agents/IAgent';
+import Location from 'src/models/Location';
+import Agents from 'src/agents/Agents';
 
 export default class Receiver implements IAgent {
 
-    private readonly filepath = 'src/prolog/receiver.pl';
+    private readonly filepath = Agents.Receiver;
 
     private errors: Location[] = [];
     // private map: Map<Location[], Location> = new Map<Location[], Location>();
@@ -33,6 +34,12 @@ export default class Receiver implements IAgent {
         return new Location();
     }
 
-    addError: any;
-    addSuccess: any;
+
+    public addError(path: Location[], location: Location) {
+        throw EvalError('Not implemented');
+    }
+
+    public addSuccess(path: Location[], location: Location) {
+        throw EvalError('Not implemented');
+    }
 }
