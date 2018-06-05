@@ -1,0 +1,22 @@
+tbody {
+    margin: 0 auto;
+    max-width: 150px;
+}
+
+td {
+    border: solid 1px black;
+    width: 50px;
+    height: 50px;
+    vertical-align: center;
+    margin: 0 auto;
+}
+
+.box {
+    background-color: black;
+    width: 50px;
+    height: 50px;
+}
+
+.header {
+    background-color: rgba(0,0,0,0.2)
+}

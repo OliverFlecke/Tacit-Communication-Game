@@ -6,5 +6,8 @@
       "node_modules/**/*.ts",
       "lib/*.js"
     ]
+  },
+  "rules": {
+    "no-console": false
   }
 }
