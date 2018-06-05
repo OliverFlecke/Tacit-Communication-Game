@@ -23,7 +23,7 @@ exports.execute = function execute(filePath, query) {
             answers.push(pl.format_answer(x));
         }
         else {
-            answers.push(x)
+            answers.push(x);
         }
     });
     return answers;

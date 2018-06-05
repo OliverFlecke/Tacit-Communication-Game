@@ -12,11 +12,13 @@
 % stock(item(3), shop(2), count(15), price(0.45)).
 
 
+%Zero Order Theory of Mind
 
-p(a).
-p(b).
-p(a, b).
+%Initial Knowledge
 
-test([H|T]) :-
-    writeln(H),
-    test(T).
+k(s, ls).
+k(s,lr).
+
+
+k(X, Y) :-
+    k(X,Y).
