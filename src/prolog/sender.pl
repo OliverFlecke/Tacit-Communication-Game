@@ -1,24 +1,48 @@
-% % Products
-% item(id(1), name(bread)).
-% item(id(2), name(water)).
-% item(id(3), name(apple)).
-% % Shops
-% shop(id(1), name(tau), location(spain)).
-% shop(id(2), name(swi), location(netherlands)).
-% % Stock
-% stock(item(1), shop(1), count(23), price(0.33)).
-% stock(item(2), shop(1), count(17), price(0.25)).
-% stock(item(2), shop(2), count(34), price(0.31)).
-% stock(item(3), shop(2), count(15), price(0.45)).
+%Params: currentLocation, ReceiverGoalLocation, SenderGoalLocation, 
+getPath(CL, CL, CL, P) :- 
+    writeln(P),
+    !.
+
+getPath(CL, RG, CL, P) :-
+    member(RG, P),
+    writeln(P),
+    !.
+
+getPath((CLX, CLY), (RGX,RGY), (SGX,SGY), P) :-
+    length(P, X),
+    X < 6,
+    move((CLX,CLY), (NLX, NLY)),
+    append([(NLX,NLY)], P, NP),
+    getPath((NLX, NLY), (RGX,RGY), (SGX,SGY), NP).
 
 
-%Zero Order Theory of Mind
+%Params: currentLocation, newLocation
+move((CLX, CLY), (NLX, NLY)) :-
+    NLY is CLY,
+    NLX is CLX + 1,
+    isWithInBounds(NLX),
+    isWithInBounds(NLY).
 
-%Initial Knowledge
+move((CLX, CLY), (NLX, NLY)) :-
+    NLY is CLY,
+    NLX is CLX - 1,
+    isWithInBounds(NLX),
+    isWithInBounds(NLY).
 
-k(s, ls).
-k(s,lr).
+move((CLX, CLY), (NLX, NLY)) :-
+    NLX is CLX,
+    NLY is CLY + 1,
+    isWithInBounds(NLX),
+    isWithInBounds(NLY).
+
+move((CLX, CLY), (NLX, NLY)) :-
+    NLX is CLX,
+    NLY is CLY - 1,
+    isWithInBounds(NLX),
+    isWithInBounds(NLY).
 
 
-k(X, Y) :-
-    k(X,Y).
+isWithInBounds(X) :-
+    >(X,0),
+    <(X,4).
+
