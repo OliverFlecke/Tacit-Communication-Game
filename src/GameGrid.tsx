@@ -1,8 +1,8 @@
 import React, { CSSProperties } from 'react';
-import Action from 'src/Action';
 import 'src/css/GameGrid.css';
+import Action from 'src/Action';
 import Location from 'src/Location';
-import { Player } from 'src/Player';
+import Player from 'src/Player';
 import GameState from 'src/GameState';
 
 interface IGameGridProps {
@@ -12,6 +12,7 @@ interface IGameGridProps {
     position: Location;
     path: Action[];
     setPosition: (position: Location, action: Action) => void;
+    setGameRef: (element: HTMLDivElement) => void;
 }
 
 export default class GameGrid extends React.Component<IGameGridProps, {}> {
@@ -101,6 +102,7 @@ export default class GameGrid extends React.Component<IGameGridProps, {}> {
                 className='game-container'
                 tabIndex={0}
                 onKeyDown={this.onKeyDown}
+                ref={this.props.setGameRef}
             >
                 <div id='game-overlay'>
                     <span className='cell'/>

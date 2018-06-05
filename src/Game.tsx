@@ -1,11 +1,11 @@
 import React from 'react';
+import 'src/css/Game.css';
 import GameGrid from 'src/GameGrid';
 import Round from 'src/Round';
 import GameState from 'src/GameState';
 import Action from 'src/Action';
 import Location from 'src/Location';
 
-// tslint:disable-next-line:no-empty-interface
 interface IGameState {
     round: Round;
     gameState: GameState;
@@ -13,7 +13,7 @@ interface IGameState {
     path: Action[];
 }
 
-export class Game extends React.Component<{}, IGameState> {
+export default class Game extends React.Component<{}, IGameState> {
 
     public constructor(props) {
         super(props);
@@ -21,13 +21,11 @@ export class Game extends React.Component<{}, IGameState> {
     }
 
     private finishTurn  = (event: React.MouseEvent<HTMLButtonElement>) => {
-        console.log('finish turn');
         if (this.state.gameState === GameState.Sender) {
             const round = this.state.round;
             round.senderLocation = this.state.position;
-            console.log(this.state.round);
+            this.focusGame();
 
-            console.log(this.state.round);
             this.setState({
                 ...this.state,
                 position: new Location(2, 2),
@@ -38,8 +36,7 @@ export class Game extends React.Component<{}, IGameState> {
         } else if (this.state.gameState === GameState.Receiver) {
             const round = this.state.round;
             round.receiverLocation = this.state.position;
-            console.log(this.state.round);
-            console.log(this.state.round.success())
+
             this.setState({
                 ...this.state,
                 round,
@@ -64,12 +61,18 @@ export class Game extends React.Component<{}, IGameState> {
     }
 
     private startRound = () => {
+        this.focusGame();
         this.setState({
             ...this.state,
             gameState: GameState.Sender
         })
     }
 
+    /**
+     * Set the position of the current player
+     * @param position The new position of the player
+     * @param action The action performed to get to this location
+     */
     private setPosition = (position: Location, action: Action) => {
         const path = this.state.path.concat(action);
         this.setState({
@@ -77,6 +80,19 @@ export class Game extends React.Component<{}, IGameState> {
             position,
             path
         })
+    }
+
+    /**
+     * Reference to the game grid. Allows to focus on the game grid after mouse press
+     */
+    private gameGrid?: HTMLElement;
+    private setGameRef = (element: HTMLElement) => {
+        this.gameGrid = element;
+    }
+    private focusGame() {
+        if (this.gameGrid) {
+            this.gameGrid.focus();
+        }
     }
 
     public render() {
@@ -89,12 +105,16 @@ export class Game extends React.Component<{}, IGameState> {
                     position={this.state.position}
                     path={this.state.path}
                     setPosition={this.setPosition}
+                    setGameRef={this.setGameRef}
                 />
-                <button onClick={this.finishTurn}>Finish</button>
-                <button onClick={this.newRound}>New round</button>
-                <button onClick={this.startRound}>Start round</button>
+                <div className='controls-container'>
+                    <button onClick={this.newRound}>New round</button>
+                    <button onClick={this.startRound}>Start round</button>
+                    <button onClick={this.finishTurn}>Finish</button>
+                </div>
                 <div
                     className={`message ${this.state.gameState === GameState.Success ? 'success' : 'failure'}`}
+                    hidden={this.state.gameState !== GameState.Failure && this.state.gameState !== GameState.Success}
                 />
             </div>
         );

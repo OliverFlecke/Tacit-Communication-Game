@@ -1,4 +1,6 @@
-export enum Player {
+enum Player {
     Sender,
     Receiver,
 }
+
+export default Player;
