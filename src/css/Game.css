@@ -1,0 +1,28 @@
+.success {
+    background-color: green;
+}
+
+.failure {
+    background-color: red;
+}
+
+.message {
+    height: 100px;
+    width: 100%;
+}
+
+.controls-container {
+    margin: 12px auto;
+    width: 50vw;
+    display: flex;
+    justify-content: space-evenly;
+}
+
+button {
+    border: none;
+    text-decoration: none;
+    background-color: #4CAF50;
+    color: white;
+    padding: 10px;
+    font-size: 1.2rem;
+}

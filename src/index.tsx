@@ -1,16 +1,7 @@
 import React from 'react';
 import ReactDOM from 'react-dom';
-import registerServiceWorker from './registerServiceWorker';
+import Game from 'src/Game';
+import registerServiceWorker from 'src/registerServiceWorker';
 
-class App extends React.Component {
-    public render() {
-        return (
-            <div>
-                Tacit Communication Game!
-            </div>
-        );
-    }
-}
-
-ReactDOM.render(<App />, document.getElementById('root'));
+ReactDOM.render(<Game />, document.getElementById('root'));
 registerServiceWorker();
