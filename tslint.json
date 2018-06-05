@@ -4,7 +4,7 @@
     "exclude": [
       "config/**/*.js",
       "node_modules/**/*.ts",
-      "lib/*.js"
+      "**/*.js"
     ]
   },
   "rules": {
@@ -20,6 +20,10 @@
     "max-line-length": [
       true,
       120
+    ],
+    "prefer-const": false,
+    "curly": [
+      false
     ]
   }
 }

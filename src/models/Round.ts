@@ -1,4 +1,4 @@
-import Location from 'src/Location';
+import Location from 'src/models/Location';
 
 export default class Round {
 
