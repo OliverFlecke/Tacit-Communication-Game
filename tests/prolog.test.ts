@@ -23,6 +23,11 @@ describe("Testing prolog is working", () => {
         var regex = /X = \([1-9], [1-9]\)/
         expect(answers[0]).toMatch(regex)
     })
+    it("Test receiver with lists", () => {
+        var answers = prolog.execute(receiverPath, 'getMove([(1,2),(2,2)], [], [{[(1,2),(2,2)], (1,2)}, {[], (1,3)}], X).');
+        var regex = /X = \([1-9], [1-9]\)/
+        expect(answers[0]).toMatch(regex)
+    })
 
 
 
