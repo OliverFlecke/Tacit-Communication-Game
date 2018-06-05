@@ -8,6 +8,9 @@
     ]
   },
   "rules": {
-    "no-console": false
+    "no-console": false,
+    "member-ordering": false,
+    "object-literal-sort-keys": false,
+    "member-access": false
   }
 }
