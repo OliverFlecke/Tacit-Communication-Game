@@ -1,4 +1,4 @@
-export enum Action {
+enum Action {
     Up,
     Down,
     Left,
@@ -6,3 +6,4 @@ export enum Action {
     Start,
     Finish,
 }
+export default Action;

@@ -11,6 +11,15 @@
     "no-console": false,
     "member-ordering": false,
     "object-literal-sort-keys": false,
-    "member-access": false
+    "member-access": false,
+    "ordered-imports": false,
+    "variable-name": [
+      true,
+      "allow-leading-underscore"
+    ],
+    "max-line-length": [
+      true,
+      120
+    ]
   }
 }
