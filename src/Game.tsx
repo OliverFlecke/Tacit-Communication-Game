@@ -30,37 +30,46 @@ export default class Game extends React.Component<{}, IGameState> {
         return {
             round: new Round(),
             gameState: GameState.ShowGoal,
-            position: new Location(2, 2),
+            position: Location.New(2, 2),
             path: [],
             receiverType: PlayerType.ZeroOrder
         }
     }
 
     componentDidUpdate() {
-        if (this.state.gameState === GameState.SenderDone) {
-            const round = this.state.round;
-            round.senderLocation = this.state.position;
-            this.focusGame();
+        const round = this.state.round;
+        switch (this.state.gameState) {
+            case GameState.SenderDone:
+                round.senderLocation = this.state.position;
+                round.senderPath = this.state.path;
+                this.focusGame();
 
-            this.setState({
-                ...this.state,
-                position: new Location(2, 2),
-                path: [],
-                round,
-                gameState: GameState.Receiver,
-            });
-        }
-        else if (this.state.gameState === GameState.ReceiverDone) {
-            const round = this.state.round;
-            round.receiverLocation = this.state.position;
+                this.setState({
+                    ...this.state,
+                    position: Location.New(2, 2),
+                    round,
+                    gameState: GameState.Receiver,
+                });
+                break;
+            case GameState.ReceiverDone:
+                round.receiverLocation = this.state.position;
 
-            this.setState({
-                ...this.state,
-                position: new Location(2, 2),
-                path: [],
-                round,
-                gameState: this.getFinalGameState(),
-            });
+                this.setState({
+                    ...this.state,
+                    position: Location.New(2, 2),
+                    round,
+                    gameState: this.getFinalGameState(),
+                });
+                break;
+
+            case GameState.Success:
+                this.receiver.addSuccess(Location.actionsToPath(round.senderPath), round.receiverLocation);
+
+            case GameState.Failure:
+                this.receiver.addError(Location.actionsToPath(round.senderPath), round.receiverLocation);
+
+            default:
+                break;
         }
 
         if (this.state.gameState === GameState.Receiver && this.state.receiverType !== PlayerType.Human) {

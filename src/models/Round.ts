@@ -1,12 +1,14 @@
 import Location from 'src/models/Location';
+import Action from 'src/models/Action';
 
 export default class Round {
 
     constructor() {
         this._senderGoal = this.CreateRandomPoint(3,3);
         this._receiverGoal = this.CreateRandomPoint(3,3);
-        this._receiverLocation = new Location();
-        this._senderLocation = new Location();
+        this._receiverLocation = Location.New();
+        this._senderLocation = Location.New();
+        this._senderPath = [];
     }
 
     private _senderGoal : Location;
@@ -23,7 +25,7 @@ export default class Round {
     public CreateRandomPoint(xmax: number, ymax: number): Location {
         const x = Math.round((Math.random() * (xmax - 1))) + 1;
         const y = Math.round((Math.random() * (ymax - 1))) + 1;
-        return new Location(x, y);
+        return Location.New(x, y);
     }
 
 
@@ -43,6 +45,16 @@ export default class Round {
     public set receiverLocation(v : Location) {
         this._receiverLocation = v;
     }
+
+
+    private _senderPath : Action[];
+    public get senderPath() : Action[] {
+        return this._senderPath;
+    }
+    public set senderPath(v : Action[]) {
+        this._senderPath = v;
+    }
+
 
     public success() {
         return Location.equals(this.senderGoal, this.senderLocation) &&
