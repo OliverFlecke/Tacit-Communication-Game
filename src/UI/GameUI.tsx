@@ -1,6 +1,6 @@
 import React from 'react';
 import 'src/css/Game.css';
-import GameGrid from 'src/GameGrid';
+import GameGrid from 'src/UI/GameGridUI';
 import Round from 'src/models/Round';
 import GameState from 'src/models/GameState';
 import Action from 'src/models/Action';
@@ -9,17 +9,9 @@ import Receiver from 'src/agents/Receiver';
 import PlayerType from 'src/models/PlayerType';
 import Statistics from 'src/models/Statistics';
 import Sender from 'src/agents/Sender';
+import IGameState from 'src/models/IGameState';
 
-interface IGameState {
-    round: Round;
-    gameState: GameState;
-    receiverType: PlayerType;
-    senderType: PlayerType;
-    position: Location;
-    path: Action[];
-}
-
-export default class Game extends React.Component<{}, IGameState> {
+export default class GameUI extends React.Component<{}, IGameState> {
 
     private statistics: Statistics = new Statistics();
     private receiver: Receiver;
