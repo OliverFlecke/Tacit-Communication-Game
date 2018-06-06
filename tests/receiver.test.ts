@@ -4,7 +4,7 @@ import Location from '../src/models/Location';
 describe('Testing receiver', () => {
     it("getMove", () => {
         const receiver = new Receiver();
-        const path = [new Location(1,1), new Location(1,2)]
+        const path = [Location.New(1,1), Location.New(1,2)]
         receiver.getMove(path);
     })
 });
