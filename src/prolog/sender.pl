@@ -6,6 +6,8 @@ getMove(C, R, S, P, OR, M) :-
     getPath(C, R, S, P, OR, 0, M), 
     \+ member({P, _}, M), !.    
 
+getPath(CL, CL, CL, [], _, _, _) :- 
+    !.
 getPath(CL, CL, CL, _, _, _, _) :- 
     !.
 
