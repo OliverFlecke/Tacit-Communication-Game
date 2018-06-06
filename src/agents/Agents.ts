@@ -1,6 +1,6 @@
 enum Agents {
     Receiver = 'receiver',
-    Sender = '',
+    Sender = 'sender',
 }
 
 export default Agents;

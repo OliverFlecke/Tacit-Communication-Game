@@ -61,10 +61,12 @@ export default class Game extends React.Component<{}, IGameState> {
             case GameState.Success:
                 this.receiver.addSuccess(Location.actionsToPath(round.senderPath), round.receiverLocation);
                 this.statistics.addSuccess();
+                break;
 
             case GameState.Failure:
                 this.receiver.addError(Location.actionsToPath(round.senderPath), round.receiverLocation);
                 this.statistics.addFailure();
+                break;
 
             default:
                 break;
@@ -72,9 +74,16 @@ export default class Game extends React.Component<{}, IGameState> {
 
         // Let the agent take its move
         if (this.state.gameState === GameState.Sender && this.state.senderType !== PlayerType.Human) {
+            const path = this.sender.getPath(this.state.round);
+            let position = this.state.position;
+            for (const action of path) {
+                position = Location.getNextLocation(position, action);
+            }
+            console.log(path);
             this.setState({
                 ...this.state,
-                position: this.sender.getMove(this.state.round),
+                path,
+                position,
                 gameState: GameState.SenderDone,
             })
         }
@@ -98,7 +107,7 @@ export default class Game extends React.Component<{}, IGameState> {
             position: Location.New(2, 2),
             path: [],
             receiverType: PlayerType.ZeroOrder,
-            senderType: PlayerType.Human,
+            senderType: PlayerType.ZeroOrder,
         }
     }
 

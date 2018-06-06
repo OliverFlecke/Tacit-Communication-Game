@@ -13,3 +13,13 @@ export function mapToPrologString(map: LocationMap<Location>): string {
     });
     return "[" + text.join(',') + "]";
 }
+
+export function stringToLocation(text: string) : Location {
+    const regex = new RegExp('[1-9]', 'g');
+    const matches = text.match(regex);
+
+    if (matches) {
+        return Location.convertFromString(matches);
+    }
+    throw new EvalError('String cannot be converted to Location');
+}

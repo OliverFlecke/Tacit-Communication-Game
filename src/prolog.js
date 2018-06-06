@@ -1,5 +1,6 @@
 // Load in all the necessary agent types.
 let receiver = require('src/prolog/receiver.pl');
+let sender = require('src/prolog/sender.pl');
 // To read files
 var fs = require('fs');
 var path = require('path');
@@ -10,13 +11,16 @@ require("./lib/lists.js")(pl);
 require("./lib/random.js")(pl);
 
 exports.execute = function execute(agent, query) {
-    var session = pl.create(1000);
+    var session = pl.create(10000000);
 
     // Load the program
     let program = '';
     switch (agent) {
         case 'receiver':
             program = readFile(receiver);
+            break;
+        case 'sender':
+            program = readFile(sender);
             break;
         default:
             break;
