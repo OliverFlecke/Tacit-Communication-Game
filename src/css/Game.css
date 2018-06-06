@@ -11,12 +11,6 @@
     width: 100%;
 }
 
-.controls-container {
-    margin: 12px auto;
-    width: 50vw;
-    display: flex;
-    justify-content: space-evenly;
-}
 
 button {
     border: none;
@@ -25,4 +19,26 @@ button {
     color: white;
     padding: 10px;
     font-size: 1.2rem;
+}
+
+button:disabled {
+    background-color: grey;
+}
+
+.statistics {
+    margin: 0 auto;
+    display: flex;
+    font-size: 1.4rem;
+    justify-content: space-evenly;
+}
+
+.gloabl-container {
+    max-width: 300px;
+}
+
+.controls-container {
+    margin: 12px auto;
+    width: 50vw;
+    display: flex;
+    justify-content: space-between;
 }

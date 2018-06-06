@@ -2,7 +2,7 @@ enum PlayerType {
     Human,
     ZeroOrder,
     FirstOrder,
-    SecordOrder,
+    SecondOrder,
 }
 
 export default PlayerType;
