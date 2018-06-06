@@ -24,13 +24,8 @@ export default class Location {
         }
     }
 
-    // public constructor(x?: number, y?: number) {
-    //     this.x = x || 0;
-    //     this.y = y || 0;
-    // }
-
     public static New(x?: number, y?: number) {
-        return new Location({_x: x || 0, _y: y || 0});
+        return new Location({_x: x || 2, _y: y || 2});
     }
 
     public static equals(a: Location, b: Location): boolean {

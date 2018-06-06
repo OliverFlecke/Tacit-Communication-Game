@@ -1,162 +1,34 @@
 import React from 'react';
 import 'src/css/Game.css';
 import GameGrid from 'src/UI/GameGridUI';
-import Round from 'src/models/Round';
 import GameState from 'src/models/GameState';
-import Action from 'src/models/Action';
-import Location from 'src/models/Location';
-import Receiver from 'src/agents/Receiver';
-import PlayerType from 'src/models/PlayerType';
-import Statistics from 'src/models/Statistics';
-import Sender from 'src/agents/Sender';
-import IGameState from 'src/models/IGameState';
+import Game from 'src/game/Game';
+import IUI from 'src/UI/IUI';
 
-export default class GameUI extends React.Component<{}, IGameState> {
+export default class GameUI extends React.Component implements IUI {
 
-    private statistics: Statistics = new Statistics();
-    private receiver: Receiver;
-    private sender: Sender;
-
-    public constructor(props) {
-        super(props);
-        this.receiver = new Receiver();
-        this.sender = new Sender();
-        this.state = this.generateRound();
-    }
+    private game: Game = new Game(this);
 
     componentDidUpdate() {
-        const round = this.state.round;
-        switch (this.state.gameState) {
-            case GameState.SenderDone:
-                round.senderLocation = this.state.position;
-                round.senderPath = this.state.path;
-                this.focusGame();
-
-                this.setState({
-                    ...this.state,
-                    position: Location.New(2, 2),
-                    round,
-                    gameState: GameState.Receiver,
-                });
-                break;
-            case GameState.ReceiverDone:
-                round.receiverLocation = this.state.position;
-
-                this.setState({
-                    ...this.state,
-                    position: Location.New(2, 2),
-                    round,
-                    gameState: this.getFinalGameState(),
-                });
-                break;
-
-            case GameState.Success:
-                this.receiver.addSuccess(Location.actionsToPath(round.senderPath), round.receiverLocation);
-                this.statistics.addSuccess();
-                break;
-
-            case GameState.Failure:
-                this.receiver.addError(Location.actionsToPath(round.senderPath), round.receiverLocation);
-                this.statistics.addFailure();
-                break;
-
-            default:
-                break;
-        }
-
-        // Let the agent take its move
-        if (this.state.gameState === GameState.Sender && this.state.senderType !== PlayerType.Human) {
-            const path = this.sender.getPath(this.state.round);
-            let position = this.state.position;
-            for (const action of path) {
-                position = Location.getNextLocation(position, action);
-            }
-            console.log(path);
-            this.setState({
-                ...this.state,
-                path,
-                position,
-                gameState: GameState.SenderDone,
-            })
-        }
-        else if (this.state.gameState === GameState.Receiver && this.state.receiverType !== PlayerType.Human) {
-            this.setState({
-                ...this.state,
-                position: this.receiver.getMove(Location.actionsToPath(this.state.path)),
-                gameState: GameState.ReceiverDone,
-            });
-        }
+        this.game.update();
     }
 
-    /**
-     * Generate a new round of the game
-     * @returns A game state
-     */
-    private generateRound(): IGameState {
-        return {
-            round: new Round(),
-            gameState: GameState.ShowGoal,
-            position: Location.New(2, 2),
-            path: [],
-            receiverType: PlayerType.ZeroOrder,
-            senderType: PlayerType.ZeroOrder,
-        }
-    }
-
-    /**
-     * @returns The final game state of the round, either Success or Failure
-     */
-    private getFinalGameState(): GameState {
-        if (this.state.round.success()) {
-            return GameState.Success;
-        } else {
-            return GameState.Failure;
-        }
+    private startRound = () => {
+        this.game.startRound();
+        this.focusGame();
     }
 
     /**
      * End the current turn
      */
     private endTurn = () => {
-        const gameState = this.state.gameState;
-        if (gameState === GameState.Receiver) {
-            this.setState({
-                ...this.state,
-                gameState: GameState.ReceiverDone,
-            });
-        }
-        else if (gameState === GameState.Sender) {
-            this.setState({
-                ...this.state,
-                gameState: GameState.SenderDone,
-            });
-        }
+        this.game.endTurn();
+        this.focusGame();
     }
 
     private newRound = () => {
-        this.setState(this.generateRound());
-    }
-
-    private startRound = () => {
+        this.game.newRound();
         this.focusGame();
-        this.setState({
-            ...this.state,
-            gameState: GameState.Sender
-        })
-    }
-
-    /**
-     * Set the position of the current player
-     * @param position The new position of the player
-     * @param action The action performed to get to this location
-     */
-    private setPosition = (position: Location, action: Action) => {
-        const path = this.state.path.concat(action);
-        this.setState({
-            ...this.state,
-            position,
-            path
-        })
     }
 
     /**
@@ -173,11 +45,10 @@ export default class GameUI extends React.Component<{}, IGameState> {
     }
 
     private onKeyDown = (event: React.KeyboardEvent<HTMLElement>) => {
-        const gameState = this.state.gameState;
         switch (event.key) {
             case 'Enter':
-                switch (gameState) {
-                    case GameState.ShowGoal:
+                switch (this.game.gameState) {
+                    case GameState.Initial:
                         this.startRound();
                         break;
                     case GameState.Receiver:
@@ -186,6 +57,7 @@ export default class GameUI extends React.Component<{}, IGameState> {
                         break;
                     case GameState.Failure:
                     case GameState.Success:
+                    case GameState.Finished:
                         this.newRound();
                         break;
                     default:
@@ -203,43 +75,37 @@ export default class GameUI extends React.Component<{}, IGameState> {
                 onKeyDown={this.onKeyDown}
             >
                 <GameGrid
-                    receiverGoal={this.state.round.receiverGoal}
-                    senderGoal={this.state.round.senderGoal}
-                    gameState={this.state.gameState}
-                    position={this.state.position}
-                    path={this.state.path}
-                    setPosition={this.setPosition}
+                    game={this.game}
                     setGameRef={this.setGameRef}
                 />
                 <div className='controls-container'>
                     <button
                         onClick={this.newRound}
-                        disabled={this.state.gameState !== GameState.Failure &&
-                            this.state.gameState !== GameState.Success}
+                        disabled={this.game.gameState !== GameState.Finished}
                     >
                         New round
                     </button>
                     <button
                         onClick={this.startRound}
-                        disabled={this.state.gameState !== GameState.ShowGoal}
+                        disabled={this.game.gameState !== GameState.Initial}
                     >
                         Start round
                     </button>
                     <button
                         onClick={this.endTurn}
-                        disabled={this.state.gameState !== GameState.Receiver &&
-                            this.state.gameState !== GameState.Sender}
+                        disabled={this.game.gameState !== GameState.Receiver &&
+                            this.game.gameState !== GameState.Sender}
                     >
                         End turn
                     </button>
                 </div>
                 <div className='statistics'>
-                    <div>Successes: {this.statistics.successes}</div>
-                    <div>Failures:  {this.statistics.failures}</div>
+                    <div>Successes: {this.game.statistics.successes}</div>
+                    <div>Failures:  {this.game.statistics.failures}</div>
                 </div>
                 <div
-                    className={`message ${this.state.gameState === GameState.Success ? 'success' : 'failure'}`}
-                    hidden={this.state.gameState !== GameState.Failure && this.state.gameState !== GameState.Success}
+                    className={`message ${this.game.getFinalGameState() === GameState.Success ? 'success' : 'failure'}`}
+                    hidden={this.game.gameState !== GameState.Finished}
                 />
             </div>
         );
