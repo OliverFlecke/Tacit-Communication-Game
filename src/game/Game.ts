@@ -13,20 +13,20 @@ export default class Game {
 
     private gameSize = 3;
 
-    private _round: Round;
-    private _gameState: GameState;
+    private _round: Round = new Round();
+    private _gameState: GameState = GameState.Initial;
     public get gameState() {
         return this._gameState;
     }
 
-    private _receiverType: PlayerType;
-    private _senderType: PlayerType;
-    private _position: Location;
+    private _receiverType: PlayerType = PlayerType.ZeroOrder;
+    private _senderType: PlayerType = PlayerType.ZeroOrder;
+    private _position: Location = Location.New();
     public get position() {
         return this._position;
     }
 
-    private _path: Action[];
+    private _path: Action[] = [];
     public get path() {
         return this._path;
     }
@@ -39,27 +39,18 @@ export default class Game {
         return this._round.receiverGoal;
     }
 
-    private _statistics: Statistics;
+    private _statistics: Statistics = new Statistics();
     public get statistics() {
         return this._statistics;
     }
 
-    private _receiver: Receiver;
-    private _sender: Sender;
+    private _receiver: Receiver = new Receiver();
+    private _sender: Sender = new Sender();
 
     private _ui?: IUI;
 
     constructor(ui?: IUI) {
         this._ui = ui;
-        this._gameState = GameState.Initial;
-        this._receiverType = PlayerType.Human;
-        this._senderType = PlayerType.Human;
-        this._position = Location.New();
-        this._path = [];
-        this._round = new Round();
-        this._statistics = new Statistics();
-        this._receiver = new Receiver();
-        this._sender = new Sender();
     }
 
     /**
@@ -77,8 +68,6 @@ export default class Game {
      */
     public newRound() {
         this._gameState = GameState.Initial;
-        this._receiverType = PlayerType.Human;
-        this._senderType = PlayerType.Human;
         this._position = Location.New();
         this._path = [];
         this._round = new Round();
@@ -126,16 +115,17 @@ export default class Game {
             for (const action of this._path) {
                 this._position = Location.getNextLocation(this._position, action);
             }
-            this._gameState = GameState.SenderDone;
+            this.endTurn();
         }
         else if (this._gameState === GameState.Receiver && this._receiverType !== PlayerType.Human) {
             this._position = this._receiver.getMove(Location.actionsToPath(this._path));
-            this._gameState = GameState.ReceiverDone;
+            this.endTurn();
         }
     }
 
     public startRound() {
         this._gameState = GameState.Sender;
+        this.update();
         this.updateUI();
     }
 

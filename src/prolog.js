@@ -1,6 +1,15 @@
 // Load in all the necessary agent types.
-let receiver = require('src/prolog/receiver.pl');
-let sender = require('src/prolog/sender.pl');
+try {
+    var receiver = require('src/prolog/receiver.pl');
+    var sender = require('src/prolog/sender.pl');
+    var isNode = false;
+}
+catch (ex) {
+    console.warn('Unable to load prolog directly. Most likely running in NodeJs');
+    var receiver = 'src/prolog/receiver.pl';
+    var sender = 'src/prolog/sender.pl';
+    isNode = true;
+}
 // To read files
 var fs = require('fs');
 var path = require('path');
@@ -11,20 +20,10 @@ require("./lib/lists.js")(pl);
 require("./lib/random.js")(pl);
 
 exports.execute = function execute(agent, query) {
-    var session = pl.create(10000000);
+    let session = pl.create(10000000);
 
     // Load the program
-    let program = '';
-    switch (agent) {
-        case 'receiver':
-            program = readFile(receiver);
-            break;
-        case 'sender':
-            program = readFile(sender);
-            break;
-        default:
-            break;
-    }
+    let program = readFile(agent);
     session.consult(program);
 
     // Query the goal
@@ -33,7 +32,6 @@ exports.execute = function execute(agent, query) {
     let answers = [];
     session.answers(x => {
         if (x.links) {
-            // answers.push(x.links.X.id);
             answers.push(pl.format_answer(x));
         }
         else {
@@ -43,7 +41,22 @@ exports.execute = function execute(agent, query) {
     return answers;
 }
 
-function readFile(filepath) {
+function readFile(agent) {
+    switch (agent) {
+        case 'receiver':
+            filepath = receiver;
+            break;
+        case 'sender':
+            filepath = sender;
+            break;
+        default:
+            break;
+    }
+
+    if (isNode) {
+        return fs.readFileSync(filepath, {encoding: 'utf-8'});
+    }
+
     var request = new XMLHttpRequest();
     request.open('GET', filepath, false);
     request.send(null);

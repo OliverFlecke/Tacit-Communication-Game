@@ -15,6 +15,8 @@ export function mapToPrologString(map: LocationMap<Location>): string {
 }
 
 export function stringToLocation(text: string) : Location {
+    if (typeof text !== 'string') { return Location.New(); }
+
     const regex = new RegExp('[1-9]', 'g');
     const matches = text.match(regex);
 

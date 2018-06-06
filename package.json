@@ -19,6 +19,9 @@
         },
         "testMatch": [
             "**/tests/*.(ts|tsx)"
+        ],
+        "modulePaths": [
+            "<rootDir>"
         ]
     },
     "author": "Oliver Fleckenstein",
