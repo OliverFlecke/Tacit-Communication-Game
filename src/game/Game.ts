@@ -19,8 +19,9 @@ export default class Game {
         return this._gameState;
     }
 
-    private _receiverType: PlayerType = PlayerType.ZeroOrder;
-    private _senderType: PlayerType = PlayerType.ZeroOrder;
+    public receiverType: PlayerType = PlayerType.Human;
+    public senderType: PlayerType = PlayerType.Human;
+
     private _position: Location = Location.New();
     public get position() {
         return this._position;
@@ -110,16 +111,16 @@ export default class Game {
         }
 
         // Let the agent take its move
-        if (this._gameState === GameState.Sender && this._senderType !== PlayerType.Human) {
+        if (this._gameState === GameState.Sender && this.senderType !== PlayerType.Human) {
             this._path = this._sender.getPath(this._round);
             for (const action of this._path) {
                 this._position = Location.getNextLocation(this._position, action);
             }
-            this.endTurn();
+            // this.endTurn();
         }
-        else if (this._gameState === GameState.Receiver && this._receiverType !== PlayerType.Human) {
+        else if (this._gameState === GameState.Receiver && this.receiverType !== PlayerType.Human) {
             this._position = this._receiver.getMove(Location.actionsToPath(this._path));
-            this.endTurn();
+            // this.endTurn();
         }
     }
 
