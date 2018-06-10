@@ -7,7 +7,7 @@
         "test": "jest",
         "start": "react-scripts-ts start",
         "build": "webpack",
-        "deplay": "npm run build && gh-pages -d dist"
+        "deploy": "gh-pages -d dist"
     },
     "jest": {
         "moduleFileExtensions": [
