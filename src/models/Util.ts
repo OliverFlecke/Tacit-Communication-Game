@@ -1,5 +1,5 @@
-import Location from 'src/models/Location';
-import LocationMap from 'src/models/LocationMap';
+import Location from './Location';
+import LocationMap from './LocationMap';
 
 export function locationsToPrologString(locations: Location[]): string {
     return "[" + locations.map(location => location.toString()).join(',') + "]";

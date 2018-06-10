@@ -1,7 +1,8 @@
 // Load in all the necessary agent types.
+// import receiver from 'src'
 try {
-    var receiver = require('src/prolog/receiver.pl');
-    var sender = require('src/prolog/sender.pl');
+    var receiver = require('./prolog/receiver.pl');
+    var sender = require('./prolog/sender.pl');
     var isNode = false;
 }
 catch (ex) {
@@ -9,10 +10,10 @@ catch (ex) {
     var receiver = 'src/prolog/receiver.pl';
     var sender = 'src/prolog/sender.pl';
     isNode = true;
+    // To read files
+    // var fs = require('fs');
+    // var path = require('path');
 }
-// To read files
-var fs = require('fs');
-var path = require('path');
 
 // Import Tau Prolog core and create a session
 var pl = require("./lib/core.js");
@@ -42,6 +43,7 @@ exports.execute = function execute(agent, query) {
 }
 
 function readFile(agent) {
+    let filepath = '';
     switch (agent) {
         case 'receiver':
             filepath = receiver;
@@ -57,10 +59,12 @@ function readFile(agent) {
         return fs.readFileSync(filepath, {encoding: 'utf-8'});
     }
 
-    var request = new XMLHttpRequest();
-    request.open('GET', filepath, false);
-    request.send(null);
-    var returnValue = request.responseText;
+    if (filepath.match('/static/media/')) {
+        var request = new XMLHttpRequest();
+        request.open('GET', filepath, false);
+        request.send(null);
+        return request.responseText;
+    }
 
-    return returnValue;
+    return filepath;
 }

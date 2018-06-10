@@ -1,13 +1,13 @@
 import * as prolog from '../prolog';
-import IAgent from 'src/agents/IAgent';
-import Location from 'src/models/Location';
-import Agents from 'src/agents/Agents';
+import IAgent from './IAgent';
+import Agents from './Agents';
+import Location from '../models/Location';
 import LocationMap from '../models/LocationMap';
 import {
     locationsToPrologString,
     mapToPrologString,
     stringToLocation
-} from 'src/models/Util';
+} from '../models/Util';
 
 export default class Receiver implements IAgent {
 

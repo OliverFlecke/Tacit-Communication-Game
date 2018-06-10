@@ -1,5 +1,5 @@
-import Location from 'src/models/Location';
-import Action from 'src/models/Action';
+import Location from './Location';
+import Action from './Action';
 
 /**
  * Represents a round of the Tacit Communication Game

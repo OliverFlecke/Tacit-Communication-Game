@@ -1,10 +1,10 @@
 import React, { CSSProperties } from 'react';
-import 'src/css/GameGrid.css';
-import Action from 'src/models/Action';
-import Location from 'src/models/Location';
-import Player from 'src/models/Player';
-import GameState from 'src/models/GameState';
-import Game from 'src/game/Game';
+import '../css/GameGrid.css';
+import Action from '../models/Action';
+import Location from '../models/Location';
+import Player from '../models/Player';
+import GameState from '../models/GameState';
+import Game from '../game/Game';
 
 interface IGameGridProps {
     game: Game;

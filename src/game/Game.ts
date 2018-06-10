@@ -1,13 +1,13 @@
-import Round from 'src/models/Round';
-import GameState from 'src/models/GameState';
-import Location from 'src/models/Location';
-import PlayerType from 'src/models/PlayerType';
-import Statistics from 'src/models/Statistics';
-import Receiver from 'src/agents/Receiver';
-import Sender from 'src/agents/Sender';
-import Action from 'src/models/Action';
-import Player from 'src/models/Player';
-import IUI from 'src/UI/IUI';
+import Round from '../models/Round';
+import GameState from '../models/GameState';
+import Location from '../models/Location';
+import PlayerType from '../models/PlayerType';
+import Statistics from '../models/Statistics';
+import Receiver from '../agents/Receiver';
+import Sender from '../agents/Sender';
+import Action from '../models/Action';
+import Player from '../models/Player';
+import IUI from '../UI/IUI';
 
 export default class Game {
 

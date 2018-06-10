@@ -1,9 +1,9 @@
 import React from 'react';
-import 'src/css/Game.css';
-import GameGrid from 'src/UI/GameGridUI';
-import GameState from 'src/models/GameState';
-import Game from 'src/game/Game';
-import IUI from 'src/UI/IUI';
+import '../css/Game.css';
+import IUI from './IUI';
+import GameGrid from './GameGridUI';
+import GameState from '../models/GameState';
+import Game from '../game/Game';
 
 export default class GameUI extends React.Component implements IUI {
 

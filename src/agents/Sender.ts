@@ -1,13 +1,13 @@
 import * as prolog from '../prolog';
-import Location from "src/models/Location";
-import Round from "src/models/Round";
-import Agents from 'src/agents/Agents';
+import Agents from './Agents';
+import Location from "../models/Location";
+import Round from "../models/Round";
 import LocationMap from '../models/LocationMap';
+import Action from '../models/Action';
 import {
     mapToPrologString,
     stringToLocation,
-} from 'src/models/Util';
-import Action from 'src/models/Action';
+} from '../models/Util';
 
 export default class Sender {
 

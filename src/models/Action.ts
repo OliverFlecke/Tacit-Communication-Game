@@ -1,4 +1,4 @@
-import Location from 'src/models/Location';
+import Location from './Location';
 
 enum Action {
     Up,
