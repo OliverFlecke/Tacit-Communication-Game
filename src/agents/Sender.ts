@@ -16,17 +16,18 @@ export default class Sender {
 
     public getPath(round: Round) : Action[] {
         const mapString = mapToPrologString(this.map);
-
-        const query = 'getMove((2,2), ' +
-            round.receiverGoal.toString() + ', ' +
-            round.senderGoal.toString() + ', ' +
-            'X, ' +
-            '1, ' +
-            mapString +
+        //C, R, SG, P, OR, S, M
+        const query = 'getSenderMove((2,2), ' + //CurrentLocation
+            round.receiverGoal.toString() + ', ' + //ReceiverGoalLocation
+            round.senderGoal.toString() + ', ' + //SenderGoalLocation
+            'X, ' + //Path
+            '1, ' + //Order
+            '0, ' + //Strategy
+            mapString + //Map
             ').';
         let answers = prolog.execute(this.agentType, query);
         const answer: string = answers[0];
-
+        console.log(answer);
         const regex = new RegExp('\([1-9], [1-9]\)', 'g');
         const matches = answer.match(regex);
         if (matches) {

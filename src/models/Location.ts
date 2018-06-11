@@ -69,7 +69,7 @@ export default class Location {
         let i = 0;
         do {
             let currentLocation = path[i];
-            let nextLocation = path[i + 1];
+            let nextLocation = path.length>i+1 ? path[i + 1] : path[i];
             actions.push(locationsToAction(currentLocation, nextLocation));
             i++;
         } while(i < path.length - 1)

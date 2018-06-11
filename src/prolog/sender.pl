@@ -9,49 +9,55 @@ getMove(C, R, S, P, OR, M) :-
     getPath(C, R, S, P, OR, 0, M),
     \+ member({P, _}, M), !.
 
-<<<<<<< HEAD
-getPath(CL, CL, CL, [], _, _, _) :- 
-    !.
-getPath(CL, CL, CL, _, _, _, _) :- 
-=======
+%getPath - Params: currentLocation, ReceiverGoalLocation, SenderGoalLocation, Path, Order, TouchedRG, Strategy
+/* Strategy:
+    0 - Short
+    1 - Short + Goal
+    2 - Minimize number of unique cells
+    3 - Symmetry
+
+*/
+
+
+%We're at combined goal with no more path to travel
 getPath(CL, CL, CL, [], _, _, _) :-
->>>>>>> 6a262d5b25f1b51e1e1187e74d9d8f3e83acc547
+        !.
+    
+%We're at our goal and have touched receivers goal
+getPath(CL, _, CL, _, _, 1, S) :- 
+    S =< 1,
     !.
 
-getPath(CL, _, CL, _, _, 1, _) :- !.
+%We're at our goal and we dont care if we touched hers
+getPath(CL, _, CL, [CL|[]], 0, _,  0):- !.
 
-getPath(CL, _, CL, [CL|[]], 0, _, _):- !.
-
-
-%Params: currentLocation, ReceiverGoalLocation, SenderGoalLocation, Path, Order, TouchedRG, Map
-getPath((CLX, CLY), (CLX, CLY), SG, [(CLX,CLY)|T], OR, 0, M) :-
-    OR >= 1,
+%We're at receiver goal, should update that we have touched it
+getPath((CLX, CLY), (CLX, CLY), SG, [(CLX,CLY)|T], OR, 0, 1) :-
     length([(CLX,CLY)|T], X),
     X =< 7,
     append(_, [SG], [(CLX,CLY)|T]),
     move((CLX,CLY), (NLX, NLY)),
-    getPath((NLX, NLY), (CLX, CLY), SG, T, OR, 1, M).
+    getPath((NLX, NLY), (CLX, CLY), SG, T, OR, 1, 1).
 
-
-
-getPath((CLX, CLY), RG, SG, [(CLX,CLY)|T], OR, 1, M) :-
+%Have touched receivers goal
+getPath((CLX, CLY), RG, SG, [(CLX,CLY)|T], OR, 1, 1) :-
     move((CLX,CLY), (NLX, NLY)),
-    getPath((NLX, NLY), RG, SG, T, OR, 1, M).
+    getPath((NLX, NLY), RG, SG, T, OR, 1, 1).
 
-
-getPath((CLX, CLY), (RGX,RGY), (SGX,SGY), [(CLX,CLY)|T], OR, 0, M) :-
-    OR >= 1,
+%Path must include recievers goal
+getPath((CLX, CLY), (RGX,RGY), (SGX,SGY), [(CLX,CLY)|T], OR, 0,S) :-
     length([(CLX,CLY)|T], X),
     X =< 7,
     member((RGX,RGY),  [(CLX,CLY)|T]),
     move((CLX,CLY), (NLX, NLY)),
-    getPath((NLX, NLY), (RGX,RGY), (SGX,SGY), T, OR, 0, M).
+    getPath((NLX, NLY), (RGX,RGY), (SGX,SGY), T, OR, 0,S).
 
-getPath((CLX, CLY), RG, SG, [(CLX,CLY)|T], 0, 0, M) :-
+%Basic
+getPath((CLX, CLY), RG, SG, [(CLX,CLY)|T], 0, 0, S) :-
     length([(CLX,CLY)|T], X),
     X =< 7,
     move((CLX,CLY), (NLX, NLY)),
-    getPath((NLX, NLY), RG, SG, T, 0, 0, M).
+    getPath((NLX, NLY), RG, SG, T, 0, 0, S).
 
 
 %Params: currentLocation, newLocation

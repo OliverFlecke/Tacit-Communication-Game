@@ -10,6 +10,9 @@
   "rules": {
     "no-console": false,
     "member-ordering": false,
+    "comment-format": [
+      false,false,false
+    ],
     "object-literal-sort-keys": false,
     "member-access": false,
     "ordered-imports": false,
@@ -18,6 +21,7 @@
       "allow-leading-underscore"
     ],
     "prefer-const": false,
+    "defaultSeverity": "warning",
     "curly": [
       false
     ],
