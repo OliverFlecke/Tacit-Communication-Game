@@ -8,6 +8,7 @@ import Sender from '../agents/Sender';
 import Action from '../models/Action';
 import Player from '../models/Player';
 import IUI from '../UI/IUI';
+import Strategy from './Strategy';
 
 export default class Game {
 
@@ -19,8 +20,7 @@ export default class Game {
         return this._gameState;
     }
 
-    // public receiverType: PlayerType = PlayerType.Human;
-    // public senderType: PlayerType = PlayerType.Human;
+    public strategy: Strategy = Strategy.ShortestGoalPath;
 
     public get senderType() {
         return this.sender.mind;
@@ -28,6 +28,7 @@ export default class Game {
     public set senderType(value : PlayerType) {
         this.sender.mind = value;
     }
+
     public get receiverType() {
         return this.receiver.mind;
     }
@@ -132,14 +133,14 @@ export default class Game {
 
         // Let the agent take its move
         if (this._gameState === GameState.Sender && this.senderType !== PlayerType.Human) {
-            const path = this._sender.getPath(this._round);
+            const path = this._sender.getPath(this._round, this.strategy);
             if (this._ui) {
                 let i = 0;
                 const interval = setInterval(() => {
                     const action = path[i++];
                     this.updateLocation(action, Player.Sender);
                     if (i > path.length) clearInterval(interval);
-                }, 500);
+                }, this._ui.refreshDelay);
             }
             else {
                 for (const action of path) {
@@ -148,7 +149,7 @@ export default class Game {
             }
         }
         else if (this._gameState === GameState.Receiver && this.receiverType !== PlayerType.Human) {
-            this._position = this._receiver.getMove(Location.actionsToPath(this._path));
+            this._position = this._receiver.getMove(Location.actionsToPath(this._path), this.strategy);
         }
     }
 

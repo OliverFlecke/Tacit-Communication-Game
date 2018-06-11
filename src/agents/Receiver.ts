@@ -1,5 +1,5 @@
 import * as prolog from '../prolog';
-import IAgent from './IAgent';
+// import IAgent from './IAgent';
 import Agents from './Agents';
 import Location from '../models/Location';
 import LocationMap from '../models/LocationMap';
@@ -9,8 +9,9 @@ import {
     stringToLocation
 } from '../models/Util';
 import PlayerType from '../models/PlayerType';
+import Strategy from '../game/Strategy';
 
-export default class Receiver implements IAgent {
+export default class Receiver {
 
     private readonly agentType = Agents.Receiver;
     public mind = PlayerType.ZeroOrder;
@@ -24,7 +25,7 @@ export default class Receiver implements IAgent {
     /**
      * Get the next location to move to
      */
-    public getMove(path: Location[]): Location {
+    public getMove(path: Location[], strategy: Strategy): Location {
         const pathString = locationsToPrologString(path);
         const errorsString = locationsToPrologString(Array.from(this.errors.get(path) || []));
         const mapString = mapToPrologString(this._successes);
@@ -34,8 +35,8 @@ export default class Receiver implements IAgent {
             pathString + ", " +
             errorsString + ", " +
             mapString + ", X, " +
-            this.mind +
-            ", 0" +     // Strategy
+            this.mind + ", " +
+            strategy + // Strategy
             ").";
         let answers = prolog.execute(this.agentType, query);
 

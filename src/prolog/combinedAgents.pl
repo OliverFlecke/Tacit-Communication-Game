@@ -108,18 +108,47 @@ getPath(CL, RG, SG, P, 1, 0, M) :-
 
 
 % 1st Order, Shortest Goal Path(1)
+getPath(CL, SG, SG, P, 1, 1, _) :-
+    aux_getPath(CL, SG, P).
 getPath(CL, RG, SG, P, 1, 1, M) :-
     aux_getPath(CL, RG, P1),
     aux_getPath(RG, SG, P2),
-    append(P1, P2, P),
-    getReceiverMove(P, [], M, RG, 0, 1).
+    combinePath(P1, P2, P),
+    getPossibleReceiverMoves(P, [], M, RGL, 0, 1),
+    member(RG, RGL).
 
-aux_getPath(X, X, [X]):- !.
+% [H| X] [X | T] -> [H|X|T]
+combinePath([], Y, Y).
+combinePath(X, [], X).
+combinePath(X, [H|Y], P) :-
+    append(_, [H], X),
+    append(X, Y, P), !.
+combinePath(X, Y, P) :- append(X, Y, P).
 
-aux_getPath(H, Y, [H|T]) :-
+aux_getPath(X, X, []) :- !.
+aux_getPath(X, Y, [X|P]) :- aux_getPathHelper(X, Y, P), !.
+
+aux_getPathHelper(X, X, []) :- !.
+aux_getPathHelper(H, Y, [X|T]) :-
     length(T, L), L < 10,
-    move(H, X),
-    aux_getPath(X, Y, T).
+    hueristic_move(H, X, Y),
+    aux_getPathHelper(X, Y, T).
+
+abs(X, Y) :-
+    X < 0,
+    Y is -X, !.
+abs(X, X).
+
+manhattan_dist((CLX, CLY), (GX, GY), D) :-
+    abs(GX - CLX, X),
+    abs(CLY - GY, Y),
+    D is X + Y.
+
+hueristic_move(C, N, G) :-
+    manhattan_dist(C, G, D),
+    move(C, N),
+    manhattan_dist(N, G, DN),
+    D =:= DN + 1.
 
 %Params: currentLocation, newLocation
 move((CLX, CLY), (NLX, NLY)) :-

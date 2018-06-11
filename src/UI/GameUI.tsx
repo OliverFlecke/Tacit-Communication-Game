@@ -8,6 +8,8 @@ import PlayerType, { PlayerTypeValues } from '../models/PlayerType';
 
 export default class GameUI extends React.Component implements IUI {
 
+    public refreshDelay = 500;
+
     private game: Game = new Game(this);
 
     constructor(props) {

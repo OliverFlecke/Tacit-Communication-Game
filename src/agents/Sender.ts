@@ -9,14 +9,16 @@ import {
     stringToLocation,
 } from '../models/Util';
 import PlayerType from '../models/PlayerType';
+import Strategy from '../game/Strategy';
 
 export default class Sender {
 
     private readonly agentType = Agents.Sender;
     public mind: PlayerType = PlayerType.ZeroOrder;
+
     private map: LocationMap<Location> = new LocationMap<Location>();
 
-    public getPath(round: Round) : Action[] {
+    public getPath(round: Round, strategy: Strategy) : Action[] {
         const mapString = mapToPrologString(this.map);
         //C, R, SG, P, OR, S, M
         const query = 'getSenderMove((2,2), ' + //CurrentLocation
@@ -24,7 +26,7 @@ export default class Sender {
             round.senderGoal.toString() + ', ' + //SenderGoalLocation
             'X, ' + //Path
             this.mind + ', ' + //Order
-            '0, ' + //Strategy
+            strategy + ', ' + //Strategy
             mapString + //Map
             ').';
         let answers = prolog.execute(this.agentType, query);
