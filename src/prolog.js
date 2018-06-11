@@ -1,14 +1,15 @@
 // Load in all the necessary agent types.
 // import receiver from 'src'
 try {
-    var receiver = require('./prolog/receiver.pl');
-    var sender = require('./prolog/sender.pl');
+    var receiver = require('./prolog/combinedAgents.pl');
+    var sender = require('./prolog/combinedAgents.pl');
+    var test = require("./prolog/test.pl")
     var isNode = false;
 }
 catch (ex) {
     // console.warn('Unable to load prolog directly. Most likely running in NodeJs');
-    var receiver = 'src/prolog/receiver.pl';
-    var sender = 'src/prolog/sender.pl';
+    var receiver = 'src/prolog/combinedAgents.pl';
+    var sender = 'src/prolog/combinedAgents.pl';
     isNode = true;
     // To read files
     var fs = require('fs');
@@ -56,7 +57,7 @@ function readFile(agent) {
     }
 
     if (isNode) {
-        return fs.readFileSync(filepath, {encoding: 'utf-8'});
+        return fs.readFileSync(filepath, { encoding: 'utf-8' });
     }
 
     if (filepath.match('/static/media/')) {
