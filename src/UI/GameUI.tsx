@@ -4,14 +4,15 @@ import IUI from './IUI';
 import GameGrid from './GameGridUI';
 import GameState from '../models/GameState';
 import Game from '../game/Game';
-import PlayerType from '../models/PlayerType';
+import PlayerType, { PlayerTypeValues } from '../models/PlayerType';
 
 export default class GameUI extends React.Component implements IUI {
 
     private game: Game = new Game(this);
 
-    componentDidUpdate() {
-        this.game.update();
+    constructor(props) {
+        super(props);
+        this.game.senderType = PlayerType.ZeroOrder;
     }
 
     private startRound = () => {
@@ -24,7 +25,9 @@ export default class GameUI extends React.Component implements IUI {
      */
     private endTurn = () => {
         this.game.endTurn();
+        this.game.update();
         this.focusGame();
+        console.log(this.game.gameState);
     }
 
     private newRound = () => {
@@ -69,64 +72,43 @@ export default class GameUI extends React.Component implements IUI {
         }
     }
 
-    private onSenderTypeChange = (event: ChangeEvent<HTMLInputElement>) => {
-        this.game.senderType = Number(event.target.value);
-        this.forceUpdate();
-    }
-
-    private onReceiverTypeChange = (event: ChangeEvent<HTMLInputElement>) => {
-        this.game.receiverType = Number(event.target.value);
-        this.forceUpdate();
-    }
-
     private renderPlayerTypeChoice() {
+        const createRadioButton = (type: PlayerType,
+                player: PlayerType, onChange: (event: ChangeEvent<HTMLInputElement>) => void) => {
+            return (
+                <label
+                    key={`${type} ${player}`}
+                >
+                    <input
+                        type="radio"
+                        value={type}
+                        checked={player === type}
+                        onChange={onChange}
+                    />
+                    {PlayerType[type]}
+                </label>
+            );
+        };
+
+        const onSenderTypeChange = (event: ChangeEvent<HTMLInputElement>) => {
+            this.game.senderType = Number(event.target.value);
+            this.forceUpdate();
+        }
+
+        const onReceiverTypeChange = (event: ChangeEvent<HTMLInputElement>) => {
+            this.game.receiverType = Number(event.target.value);
+            this.forceUpdate();
+        }
+
         return (
             <div className='player-option'>
                 <form className='player-type'>
                     <h2>Sender type</h2>
-                    <label>
-                        <input
-                            type="radio"
-                            value={PlayerType.Human}
-                            checked={this.game.senderType === PlayerType.Human}
-                            onChange={this.onSenderTypeChange}
-                        />
-                        {PlayerType[PlayerType.Human]}
-                    </label>
-                    <label>
-                        <input
-                            type="radio"
-                            value={PlayerType.ZeroOrder}
-                            checked={this.game.senderType === PlayerType.ZeroOrder}
-                            onChange={this.onSenderTypeChange}
-                        />
-                        {PlayerType[PlayerType.ZeroOrder]}
-                    </label>
-                    {/* <input type="radio" value={PlayerType.Human} checked={this.game.senderType === PlayerType.Human} />
-                    <input type="radio" value={PlayerType.Human} checked={this.game.senderType === PlayerType.Human} /> */}
+                    {PlayerTypeValues().map(x => createRadioButton(x, this.game.senderType, onSenderTypeChange))}
                 </form>
                 <form className='player-type'>
                     <h2>Receiver type</h2>
-                    <label>
-                        <input
-                            type="radio"
-                            value={PlayerType.Human}
-                            checked={this.game.receiverType === PlayerType.Human}
-                            onChange={this.onReceiverTypeChange}
-                        />
-                        {PlayerType[PlayerType.Human]}
-                    </label>
-                    <label>
-                        <input
-                            type="radio"
-                            value={PlayerType.ZeroOrder}
-                            checked={this.game.receiverType === PlayerType.ZeroOrder}
-                            onChange={this.onReceiverTypeChange}
-                        />
-                        {PlayerType[PlayerType.ZeroOrder]}
-                    </label>
-                    {/* <input type="radio" value={PlayerType.Human} checked={this.game.receiverType === PlayerType.Human} />
-                    <input type="radio" value={PlayerType.Human} checked={this.game.receiverType === PlayerType.Human} /> */}
+                    {PlayerTypeValues().map(x => createRadioButton(x, this.game.receiverType, onReceiverTypeChange))}
                 </form>
             </div>
         );
@@ -158,7 +140,9 @@ export default class GameUI extends React.Component implements IUI {
                     <button
                         onClick={this.endTurn}
                         disabled={this.game.gameState !== GameState.Receiver &&
-                            this.game.gameState !== GameState.Sender}
+                            this.game.gameState !== GameState.Sender &&
+                            this.game.gameState !== GameState.ReceiverDone &&
+                            this.game.gameState !== GameState.SenderDone}
                     >
                         End turn
                     </button>

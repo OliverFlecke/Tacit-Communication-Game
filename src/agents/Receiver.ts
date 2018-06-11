@@ -14,7 +14,10 @@ export default class Receiver implements IAgent {
     private readonly agentType = Agents.Receiver;
 
     private errors: LocationMap<Set<Location>> = new LocationMap<Set<Location>>();
-    private map: LocationMap<Location> = new LocationMap<Location>();
+    private _successes: LocationMap<Location> = new LocationMap<Location>();
+    public get successes() {
+        return this._successes;
+    }
 
     /**
      * Get the next location to move to
@@ -22,7 +25,7 @@ export default class Receiver implements IAgent {
     public getMove(path: Location[]): Location {
         const pathString = locationsToPrologString(path);
         const errorsString = locationsToPrologString(Array.from(this.errors.get(path) || []));
-        const mapString = mapToPrologString(this.map);
+        const mapString = mapToPrologString(this._successes);
 
         // Create query
         const query = "getMove(" + pathString + ", " + errorsString + ", " + mapString + ", X, 0).";
@@ -50,8 +53,8 @@ export default class Receiver implements IAgent {
     }
 
     public addSuccess(path: Location[], location: Location) {
-        if (!this.map.get(path)) {
-            this.map.set(path, location);
+        if (!this._successes.get(path)) {
+            this._successes.set(path, location);
         }
     }
 }

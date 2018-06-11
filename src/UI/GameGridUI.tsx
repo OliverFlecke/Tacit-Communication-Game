@@ -5,6 +5,7 @@ import Location from '../models/Location';
 import Player from '../models/Player';
 import GameState from '../models/GameState';
 import Game from '../game/Game';
+import PlayerType from '../models/PlayerType';
 
 interface IGameGridProps {
     game: Game;
@@ -91,14 +92,16 @@ export default class GameGrid extends React.Component<IGameGridProps, {}> {
                         style={this.GetCoordinates(Player.Sender)}
                         hidden={this.props.game.gameState === GameState.Success ||
                             this.props.game.gameState === GameState.Failure ||
-                            this.props.game.gameState === GameState.Receiver}
+                            this.props.game.gameState === GameState.Receiver ||
+                            this.props.game.senderType !== PlayerType.Human}
                     />
                     <span
                         className='receiverGoal player'
                         style={this.GetCoordinates(Player.Receiver)}
                         hidden={this.props.game.gameState === GameState.Success ||
                             this.props.game.gameState === GameState.Failure ||
-                            this.props.game.gameState === GameState.Receiver}
+                            this.props.game.gameState === GameState.Receiver ||
+                            this.props.game.senderType !== PlayerType.Human}
                     />
                 </div>
             </div>

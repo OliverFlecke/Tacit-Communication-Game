@@ -77,7 +77,7 @@ export default class Location {
         return actions;
     }
 
-    public toString() {
+    public toString = () : string => {
         return `(${this.x}, ${this.y})`;
     }
 }

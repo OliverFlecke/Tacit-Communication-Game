@@ -6,13 +6,13 @@ try {
     var isNode = false;
 }
 catch (ex) {
-    console.warn('Unable to load prolog directly. Most likely running in NodeJs');
+    // console.warn('Unable to load prolog directly. Most likely running in NodeJs');
     var receiver = 'src/prolog/receiver.pl';
     var sender = 'src/prolog/sender.pl';
     isNode = true;
     // To read files
-    // var fs = require('fs');
-    // var path = require('path');
+    var fs = require('fs');
+    var path = require('path');
 }
 
 // Import Tau Prolog core and create a session

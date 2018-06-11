@@ -46,7 +46,14 @@ export default class Game {
     }
 
     private _receiver: Receiver = new Receiver();
+    public get receiver() {
+        return this._receiver;
+    }
+
     private _sender: Sender = new Sender();
+    public get sender() {
+        return this._sender;
+    }
 
     private _ui?: IUI;
 
@@ -87,7 +94,7 @@ export default class Game {
                 break;
             case GameState.ReceiverDone:
                 this._round.receiverLocation = this._position;
-                this._position = Location.New(2, 2);
+                this._position = Location.New();
                 this._gameState = this.getFinalGameState();
                 this.updateUI();
                 break;
@@ -112,22 +119,37 @@ export default class Game {
 
         // Let the agent take its move
         if (this._gameState === GameState.Sender && this.senderType !== PlayerType.Human) {
-            this._path = this._sender.getPath(this._round);
-            for (const action of this._path) {
-                this._position = Location.getNextLocation(this._position, action);
+            const path = this._sender.getPath(this._round);
+            if (this._ui) {
+                let i = 0;
+                setInterval(() => {
+                    const action = path[i++];
+                    this.updateLocation(action, Player.Sender);
+                    console.log(`${this._position}`);
+                }, 500);
             }
-            // this.endTurn();
+            else {
+                for (const action of path) {
+                    this.updateLocation(action, Player.Sender);
+                }
+            }
         }
         else if (this._gameState === GameState.Receiver && this.receiverType !== PlayerType.Human) {
             this._position = this._receiver.getMove(Location.actionsToPath(this._path));
-            // this.endTurn();
         }
+    }
+
+    public simulateRound() {
+        this.newRound();
+        this.startRound();
+        this.endTurn();
+        this.endTurn();
+        this.update();
     }
 
     public startRound() {
         this._gameState = GameState.Sender;
         this.update();
-        this.updateUI();
     }
 
     /**
