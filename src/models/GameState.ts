@@ -1,11 +1,12 @@
 enum GameState {
-    ShowGoal,
+    Initial,
     Sender,
     SenderDone,
     Receiver,
     ReceiverDone,
     Success,
     Failure,
+    Finished,
 }
 
 export default GameState;

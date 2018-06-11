@@ -1,0 +1,17 @@
+{
+    "compilerOptions": {
+        "rootDir": ".",
+        "outDir": "./dist/",
+        "sourceMap": true,
+        "target": "es6",
+        "module": "commonjs",
+        "jsx": "react",
+        "typeRoots": [
+            "node_modules/@types"
+        ]
+    },
+    "exclude": [
+        "node_modules",
+        "test"
+    ]
+}

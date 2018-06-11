@@ -6,30 +6,33 @@ describe("Testing prolog is working", () => {
     let receiverPath = "./src/prolog/receiver.pl";
 
     it("Simple test to interface with prolog", () => {
-        var answers = prolog.execute(filePath, 'p(X).');
+        let answers = prolog.execute(filePath, 'p(X).');
         expect(answers).toEqual(['X = a ;', 'X = b ;', false])
     })
 
     it("Test binary predicate", () => {
-        var answers = prolog.execute(filePath, 'p(X, Y).');
+        let answers = prolog.execute(filePath, 'p(X, Y).');
         expect(answers).toEqual(["X = a, Y = b ;", false]);
     })
     it("Test receiver in map", () => {
-        var answers = prolog.execute(receiverPath, 'getMove(left, [(1,2)], [{left, (1,2)}, {right, (3,1)}], X).');
+        let answers = prolog.execute(receiverPath, 'getMove(left, [(1,2)], [{left, (1,2)}, {right, (3,1)}], X).');
         expect(answers[0]).toEqual("X = (1, 2) ;");
     })
     it("Test receiver not in map", () => {
-        var answers = prolog.execute(receiverPath, 'getMove(down, [(1,2)], [{left, 2}, {right, 3}], X).');
-        var regex = /X = \([1-9], [1-9]\)/
+        let answers = prolog.execute(receiverPath, 'getMove(down, [(1,2)], [{left, 2}, {right, 3}], X).');
+        let regex = /X = \([1-9], [1-9]\)/
         expect(answers[0]).toMatch(regex)
     })
     it("Test receiver with lists", () => {
-        var answers = prolog.execute(receiverPath, 'getMove([(1,2),(2,2)], [], [{[(1,2),(2,2)], (1,2)}, {[], (1,3)}], X).');
-        var regex = /X = \([1-9], [1-9]\)/
+        let answers = prolog.execute(receiverPath, 'getMove([(1,2),(2,2)], [], [{[(1,2),(2,2)], (1,2)}, {[], (1,3)}], X).');
+        let regex = /X = \([1-9], [1-9]\)/
         expect(answers[0]).toMatch(regex)
     })
 
-
+    it("test", () => {
+        let answers = prolog.execute('sender', 'getMove((2,2), (1, 2), (3, 2), X, 1, []).');
+        console.log(answers);
+    })
 
 
 })

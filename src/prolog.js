@@ -1,8 +1,19 @@
 // Load in all the necessary agent types.
-let receiver = require('src/prolog/receiver.pl');
-// To read files
-var fs = require('fs');
-var path = require('path');
+// import receiver from 'src'
+try {
+    var receiver = require('./prolog/receiver.pl');
+    var sender = require('./prolog/sender.pl');
+    var isNode = false;
+}
+catch (ex) {
+    console.warn('Unable to load prolog directly. Most likely running in NodeJs');
+    var receiver = 'src/prolog/receiver.pl';
+    var sender = 'src/prolog/sender.pl';
+    isNode = true;
+    // To read files
+    // var fs = require('fs');
+    // var path = require('path');
+}
 
 // Import Tau Prolog core and create a session
 var pl = require("./lib/core.js");
@@ -10,17 +21,10 @@ require("./lib/lists.js")(pl);
 require("./lib/random.js")(pl);
 
 exports.execute = function execute(agent, query) {
-    var session = pl.create(1000);
+    let session = pl.create(10000000);
 
     // Load the program
-    let program = '';
-    switch (agent) {
-        case 'receiver':
-            program = readFile(receiver);
-            break;
-        default:
-            break;
-    }
+    let program = readFile(agent);
     session.consult(program);
 
     // Query the goal
@@ -29,7 +33,6 @@ exports.execute = function execute(agent, query) {
     let answers = [];
     session.answers(x => {
         if (x.links) {
-            // answers.push(x.links.X.id);
             answers.push(pl.format_answer(x));
         }
         else {
@@ -39,11 +42,29 @@ exports.execute = function execute(agent, query) {
     return answers;
 }
 
-function readFile(filepath) {
-    var request = new XMLHttpRequest();
-    request.open('GET', filepath, false);
-    request.send(null);
-    var returnValue = request.responseText;
+function readFile(agent) {
+    let filepath = '';
+    switch (agent) {
+        case 'receiver':
+            filepath = receiver;
+            break;
+        case 'sender':
+            filepath = sender;
+            break;
+        default:
+            break;
+    }
 
-    return returnValue;
+    if (isNode) {
+        return fs.readFileSync(filepath, {encoding: 'utf-8'});
+    }
+
+    if (filepath.match('/static/media/')) {
+        var request = new XMLHttpRequest();
+        request.open('GET', filepath, false);
+        request.send(null);
+        return request.responseText;
+    }
+
+    return filepath;
 }

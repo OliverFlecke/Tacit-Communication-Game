@@ -17,10 +17,6 @@
       true,
       "allow-leading-underscore"
     ],
-    "max-line-length": [
-      true,
-      120
-    ],
     "prefer-const": false,
     "curly": [
       false

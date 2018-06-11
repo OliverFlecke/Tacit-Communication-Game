@@ -1,14 +1,21 @@
-getMove(_, R, S, P, _, M) :- 
-    member({P, R}, M), 
+:- use_module(library(lists)).
+:- use_module(library(random)).
+
+getMove(_, R, S, P, _, M) :-
+    member({P, R}, M),
     append(_, [S], P), !.
 
-getMove(C, R, S, P, OR, M) :- 
-    getPath(C, R, S, P, OR, 0, M), 
-    \+ member({P, _}, M), !.    
+getMove(C, R, S, P, OR, M) :-
+    getPath(C, R, S, P, OR, 0, M),
+    \+ member({P, _}, M), !.
 
+<<<<<<< HEAD
 getPath(CL, CL, CL, [], _, _, _) :- 
     !.
 getPath(CL, CL, CL, _, _, _, _) :- 
+=======
+getPath(CL, CL, CL, [], _, _, _) :-
+>>>>>>> 6a262d5b25f1b51e1e1187e74d9d8f3e83acc547
     !.
 
 getPath(CL, _, CL, _, _, 1, _) :- !.
