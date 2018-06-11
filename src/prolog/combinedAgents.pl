@@ -70,7 +70,7 @@ getPossibleReceiverMoves(_, E, _, PL, 0, 0) :-
 
 
 %Sender
-getSenderMove(_, R, SG, P, _, M, _) :-
+getSenderMove(_, R, SG, P, _, _, M) :-
     member({P, R}, M),
     append(_, [SG], P), !.
 
@@ -92,18 +92,19 @@ getPath(CL, _, SG, P, 0, 0,_):-
     aux_getPath(CL, SG, P).
 
 
-%Zero Order, Shortest Goal Path(1), 
+%Zero Order, Shortest Goal Path(1),
 getPath(CL, RG, SG, P, 0, 1, _) :-
     aux_getPath(CL, RG, P1),
     aux_getPath(RG, SG, P2),
     append(P1, P2, P).
 
 % 1st Order, Shortest Path(0),
-getPath(CL, RG, SG, [CL|T], 1, 0 , M) :-
+getPath(CL, RG, SG, P, 1, 0, M) :-
     %Path, Errors, Map, Result
-    getPossibleReceiverMoves([CL|T], [], M, RGL, 0, 1),
-    member(RG, RGL),
-    append(_, [SG], [CL|T]).
+    aux_getPath(CL, SG, P),
+    % append(_, [SG], P),
+    getPossibleReceiverMoves(P, [], M, RGL, 0, 0),
+    member(RG, RGL).
 
 
 % 1st Order, Shortest Goal Path(1)
@@ -113,11 +114,12 @@ getPath(CL, RG, SG, P, 1, 1, M) :-
     append(P1, P2, P),
     getReceiverMove(P, [], M, RG, 0, 1).
 
-aux_getPath(X, X, []):- !.
+aux_getPath(X, X, [X]):- !.
 
-aux_getPath(X, Y, [H|T]) :-
-    move(X, H),
-    aux_getPath(H, Y, T).
+aux_getPath(H, Y, [H|T]) :-
+    length(T, L), L < 10,
+    move(H, X),
+    aux_getPath(X, Y, T).
 
 %Params: currentLocation, newLocation
 move((CLX, CLY), (NLX, NLY)) :-

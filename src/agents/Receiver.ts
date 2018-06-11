@@ -8,10 +8,12 @@ import {
     mapToPrologString,
     stringToLocation
 } from '../models/Util';
+import PlayerType from '../models/PlayerType';
 
 export default class Receiver implements IAgent {
 
     private readonly agentType = Agents.Receiver;
+    public mind = PlayerType.ZeroOrder;
 
     private errors: LocationMap<Set<Location>> = new LocationMap<Set<Location>>();
     private _successes: LocationMap<Location> = new LocationMap<Location>();
@@ -28,18 +30,17 @@ export default class Receiver implements IAgent {
         const mapString = mapToPrologString(this._successes);
 
         // Create query
-        const query = "getMove(" + pathString + ", " + errorsString + ", " + mapString + ", X, 0).";
+        const query = "getReceiverMove(" +
+            pathString + ", " +
+            errorsString + ", " +
+            mapString + ", X, " +
+            this.mind +
+            ", 0" +     // Strategy
+            ").";
         let answers = prolog.execute(this.agentType, query);
 
         const answer: string = answers[0];
         return stringToLocation(answer);
-        // const regex = new RegExp('[1-9]', 'g');
-        // const matches = answer.match(regex);
-
-        // if (matches) {
-        //     return Location.convertFromString(matches);
-        // }
-        // return Location.New();
     }
 
 

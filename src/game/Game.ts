@@ -19,8 +19,21 @@ export default class Game {
         return this._gameState;
     }
 
-    public receiverType: PlayerType = PlayerType.Human;
-    public senderType: PlayerType = PlayerType.Human;
+    // public receiverType: PlayerType = PlayerType.Human;
+    // public senderType: PlayerType = PlayerType.Human;
+
+    public get senderType() {
+        return this.sender.mind;
+    }
+    public set senderType(value : PlayerType) {
+        this.sender.mind = value;
+    }
+    public get receiverType() {
+        return this.receiver.mind;
+    }
+    public set receiverType(value : PlayerType) {
+        this.receiver.mind = value;
+    }
 
     private _position: Location = Location.New();
     public get position() {
@@ -122,10 +135,10 @@ export default class Game {
             const path = this._sender.getPath(this._round);
             if (this._ui) {
                 let i = 0;
-                setInterval(() => {
+                const interval = setInterval(() => {
                     const action = path[i++];
                     this.updateLocation(action, Player.Sender);
-                    console.log(`${this._position}`);
+                    if (i > path.length) clearInterval(interval);
                 }, 500);
             }
             else {

@@ -1,8 +1,8 @@
 enum PlayerType {
-    Human,
     ZeroOrder,
     FirstOrder,
     SecondOrder,
+    Human,
 }
 
 export function PlayerTypeValues(): PlayerType[] {

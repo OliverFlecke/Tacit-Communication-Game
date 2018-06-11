@@ -18,6 +18,7 @@ export default class GameUI extends React.Component implements IUI {
     private startRound = () => {
         this.game.startRound();
         this.focusGame();
+        this.forceUpdate();
     }
 
     /**
@@ -27,7 +28,6 @@ export default class GameUI extends React.Component implements IUI {
         this.game.endTurn();
         this.game.update();
         this.focusGame();
-        console.log(this.game.gameState);
     }
 
     private newRound = () => {

@@ -8,10 +8,12 @@ import {
     mapToPrologString,
     stringToLocation,
 } from '../models/Util';
+import PlayerType from '../models/PlayerType';
 
 export default class Sender {
 
     private readonly agentType = Agents.Sender;
+    public mind: PlayerType = PlayerType.ZeroOrder;
     private map: LocationMap<Location> = new LocationMap<Location>();
 
     public getPath(round: Round) : Action[] {
@@ -21,12 +23,13 @@ export default class Sender {
             round.receiverGoal.toString() + ', ' + //ReceiverGoalLocation
             round.senderGoal.toString() + ', ' + //SenderGoalLocation
             'X, ' + //Path
-            '1, ' + //Order
+            this.mind + ', ' + //Order
             '0, ' + //Strategy
             mapString + //Map
             ').';
         let answers = prolog.execute(this.agentType, query);
         const answer: string = answers[0];
+        console.log(query);
         console.log(answer);
         const regex = new RegExp('\([1-9], [1-9]\)', 'g');
         const matches = answer.match(regex);
