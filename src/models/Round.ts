@@ -43,15 +43,15 @@ export default class Round {
     constructor() {
         this._senderGoal = this.CreateRandomPoint(3,3);
         this._receiverGoal = this.CreateRandomPoint(3,3);
-        this._receiverLocation = Location.New();
-        this._senderLocation = Location.New();
+        this._receiverLocation = new Location;
+        this._senderLocation = new Location;
         this._senderPath = [];
     }
 
     public CreateRandomPoint(xmax: number, ymax: number): Location {
         const x = Math.round((Math.random() * (xmax - 1))) + 1;
         const y = Math.round((Math.random() * (ymax - 1))) + 1;
-        return Location.New(x, y);
+        return new Location(x, y);
     }
 
     public success() {

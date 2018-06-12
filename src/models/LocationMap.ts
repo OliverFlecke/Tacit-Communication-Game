@@ -32,7 +32,7 @@ export default class LocationMap<V> {
             map: Map<Location[], V>) => void, thisArg?: any): void {
         this.map.forEach((value, key) => {
             const locations: Location[] = [];
-            JSON.parse(key).forEach(x => locations.push(new Location(x)));
+            JSON.parse(key).forEach(x => locations.push(Location.New(x)));
             callbackfn.call(thisArg, value, locations, this);
         });
     }

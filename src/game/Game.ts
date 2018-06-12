@@ -36,7 +36,7 @@ export default class Game {
         this.receiver.mind = value;
     }
 
-    private _position: Location = Location.New();
+    private _position: Location = new Location();
     public get position() {
         return this._position;
     }
@@ -90,7 +90,7 @@ export default class Game {
      */
     public newRound() {
         this._gameState = GameState.Initial;
-        this._position = Location.New();
+        this._position = new Location();
         this._path = [];
         this._round = new Round();
         this.updateUI();
@@ -102,13 +102,13 @@ export default class Game {
                 this._round.senderLocation = this._position;
                 this._round.senderPath = this._path;
 
-                this._position = Location.New();
+                this._position = new Location();
                 this._gameState = GameState.Receiver;
                 this.updateUI();
                 break;
             case GameState.ReceiverDone:
                 this._round.receiverLocation = this._position;
-                this._position = Location.New();
+                this._position = new Location();
                 this._gameState = this.getFinalGameState();
                 this.updateUI();
                 break;
