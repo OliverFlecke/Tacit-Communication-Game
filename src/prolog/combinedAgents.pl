@@ -1,6 +1,15 @@
 :- use_module(library(lists)).
 :- use_module(library(random)).
 
+
+/* Strategy:
+    0 - Short
+    1 - Short + Goal
+    2 - Minimize number of unique cells
+    3 - Symmetry
+
+*/
+
 %Auxillary Function
 aux_subtract([], _, []) :- !.
 aux_subtract([A|C], B, D) :-
@@ -9,130 +18,139 @@ aux_subtract([A|C], B, D) :-
 aux_subtract([A|B], C, [A|D]) :-
         aux_subtract(B, C, D).
 
+
+%
 aux_matchMap(_,[],[]).
 
-aux_matchMap(P, M, O) :-
-    append(_, [X], P),
-    append(W, [{Q,_}], M),
+aux_matchMap(Path, Map, Output) :-
+    append(_, [X], Path),
+    append(W, [{Q,_}], Map),
     \+ append(_, [X], Q),
-    aux_matchMap(P, W, O).
+    aux_matchMap(Path, W, Output).
 
-aux_matchMap(P, M, [Y|Z]) :-
-    append(_, [X], P),
-    append(W, [{Q,Y}], M),
+aux_matchMap(Path, Map, [Y|Z]) :-
+    append(_, [X], Path),
+    append(W, [{Q,Y}], Map),
     append(_, [X], Q),
-    aux_matchMap(P, W, Z).
+    aux_matchMap(Path, W, Z).
 
 
 
 %Receiver
 %Params: Path, Errors, Map, Result, Order, Strategy
-getReceiverMove(P, _, M, X, _, _) :-
-    member({P,X}, M).
-
+getReceiverMove(Path, _, Map, X, _, _) :-    member({Path,X}, Map).
 
 %Zero Order, Shortest Goal Path(1)
-getReceiverMove(P, E, _, R, 0, 1) :-
-    aux_subtract(P, E, PL),
-    random_member(R, PL).
+getReceiverMove(Path, Errors, _, ReceiverGoal, 0, Strategy) :-
+    getPossibleReceiverMoves(Path, Errors, [], PossibleList, 0, Strategy),
+    random_member(ReceiverGoal, PossibleList).
 
-%First Order, Shortest Path(0)
-getReceiverMove(P, E, M, R, 1, 0) :-
-    aux_subtract([(1,1), (2,1), (3,1), (1,2), (2,2), (3,2), (1,3), (2,3), (3,3)], E, PL),
-    aux_matchMap(P, M, O),
-    aux_subtract(PL, O, PO),
-    random_member(R, PO), !.
-
-%First Order, Shortest Goal Path(1)
-getReceiverMove(P, E, M, R, 1, 0) :-
-    aux_subtract(P, E, PL),
-    aux_matchMap(P, M, O),
-    aux_subtract(PL, O, PO),
-    random_member(R, PO), !.
-
-getReceiverMove(_, E, _, X, _, _) :-
-    aux_subtract([(1,1), (2,1), (3,1), (1,2), (2,2), (3,2), (1,3), (2,3), (3,3)], E, PL),
-    random_member(X, PL).
+%First Order, Shortest Path(0) or Shortest Goal Path(1)
+getReceiverMove(Path, Errors, Map, ReceiverGoal, 1, Strategy):-
+    getPossibleReceiverMoves(Path, Errors, Map, PossibleList, 1, Strategy),
+    random_member(ReceiverGoal, PossibleList), !.
 
 
 %Zero Order, Any Strategy
-getPossibleReceiverMoves(P, _, M, [X|[]], 0, _) :-
-    member({P,X}, M).
+getPossibleReceiverMoves(Path, _, Map, [X|[]], 0, _) :-
+    member({Path,X}, Map).
 
 %Zero Order, Shortest Goal Path(1)
-getPossibleReceiverMoves(P, E, _, PL, 0, 1) :-
-    aux_subtract(P, E, PL).
+getPossibleReceiverMoves(Path, Errors, _, ReceiverGoal, 0, 1) :-
+    aux_subtract(Path, Errors, ReceiverGoal).
 
 %Zero Order, Shortest Path(0)
-getPossibleReceiverMoves(_, E, _, PL, 0, 0) :-
-    aux_subtract([(1,1), (2,1), (3,1), (1,2), (2,2), (3,2), (1,3), (2,3), (3,3)], E, PL).
+getPossibleReceiverMoves(_, Errors, _, ReceiverGoal, 0, 0) :-
+    aux_subtract([(1,1), (2,1), (3,1), (1,2), (2,2), (3,2), (1,3), (2,3), (3,3)], Errors, ReceiverGoal).
 
+%First Order, Shortest Path(0),
+getPossibleReceiverMoves([H|T], Errors, Map, ReceiverGoal, 1, 0) :-
+    append(_, [SenderGoal], [H|T]),
+    findall(X, (isLegalMove(X), getSenderMove(H, X, SenderGoal, [H|T], 0, 0, Map)), RGL),
+    aux_subtract(RGL, Errors, ReceiverGoal),
+    length(ReceiverGoal, L),
+    L>0.
 
+%First Order, Shortest Goal Path(1),
+getPossibleReceiverMoves([H|T], Errors, Map, ReceiverGoal, 1, 1) :-
+    append(_, [SenderGoal], [H|T]),
+    findall(X, (isLegalMove(X), getSenderMove(H, X, SenderGoal, [H|T], 0, 1, Map)), RGL),
+    aux_subtract(RGL, Errors, ReceiverGoal),
+    length(ReceiverGoal, L),
+    L>0.
 
 %Sender
-getSenderMove(_, R, SG, P, _, _, M) :-
-    member({P, R}, M),
-    append(_, [SG], P), !.
+getSenderMove(_, ReceiverGoal, SenderGoal, Path, _, _, Map) :-
+    member({Path, ReceiverGoal}, Map),
+    append(_, [SenderGoal], Path), !.
 
-getSenderMove(C, R, SG, P, OR, S, M) :-
-    getPath(C, R, SG, P, OR, S, M),
-    \+ member({P, _}, M), !.
+getSenderMove(C, ReceiverGoal, SenderGoal, Path, Order, Strategy, Map) :-
+    getPath(C, ReceiverGoal, SenderGoal, Path, Order, Strategy, Map),
+    \+ member({Path, _}, Map), !.
 
-
-%getPath Params: CurrentLocation, ReceiverGoalLocation, SenderGoalLocation, Path, Order, Strategy, Map
-/* Strategy:
-    0 - Short
-    1 - Short + Goal
-    2 - Minimize number of unique cells
-    3 - Symmetry
-
-*/
 % Zero Order, Shortest Path(0),
-getPath(CL, _, SG, P, 0, 0,_):-
-    aux_getPath(CL, SG, P).
+getPath(CurrentLocation, _, SenderGoal, Path, 0, 0,_):-
+    aux_getPath(CurrentLocation, SenderGoal, Path).
 
 
 %Zero Order, Shortest Goal Path(1),
-getPath(CL, RG, SG, P, 0, 1, _) :-
-    aux_getPath(CL, RG, P1),
-    aux_getPath(RG, SG, P2),
-    append(P1, P2, P).
+getPath(CurrentLocation, ReceiverGoal, SenderGoal, Path, 0, 1, _) :-
+    aux_getPath(CurrentLocation, ReceiverGoal, P1),
+    aux_getPath(ReceiverGoal, SenderGoal, P2),
+    combinePath(P1, P2, Path).
 
 % 1st Order, Shortest Path(0),
-getPath(CL, RG, SG, P, 1, 0, M) :-
-    %Path, Errors, Map, Result
-    aux_getPath(CL, SG, P),
-    % append(_, [SG], P),
-    getPossibleReceiverMoves(P, [], M, RGL, 0, 0),
-    member(RG, RGL).
+getPath(CurrentLocation, ReceiverGoal, SenderGoal, Path, 1, 0, Map) :-
+    aux_getPath(CurrentLocation, SenderGoal, Path),
+    getPossibleReceiverMoves(Path, [], Map, RGL, 0, 0),
+    member(ReceiverGoal, RGL).
 
 
 % 1st Order, Shortest Goal Path(1)
-getPath(CL, SG, SG, P, 1, 1, _) :-
-    aux_getPath(CL, SG, P).
-getPath(CL, RG, SG, P, 1, 1, M) :-
-    aux_getPath(CL, RG, P1),
-    aux_getPath(RG, SG, P2),
-    combinePath(P1, P2, P),
-    getPossibleReceiverMoves(P, [], M, RGL, 0, 1),
-    member(RG, RGL).
+getPath(CurrentLocation, SenderGoal, SenderGoal, Path, 1, 1, _) :-
+    aux_getPath(CurrentLocation, SenderGoal, Path).
+getPath(CurrentLocation, ReceiverGoal, SenderGoal, Path, 1, 1, Map) :-
+    aux_getPath(CurrentLocation, ReceiverGoal, P1),
+    aux_getPath(ReceiverGoal, SenderGoal, P2),
+    combinePath(P1, P2, Path),
+    getPossibleReceiverMoves(Path, [], Map, RGL, 0, 1),
+    member(ReceiverGoal, RGL).
+
+
+% 2nd Order, Shortest Path(0),
+getPath(CurrentLocation, ReceiverGoal, SenderGoal, Path, 2, 0, Map) :-
+    aux_getPath(CurrentLocation, SenderGoal, Path),
+    getPossibleReceiverMoves(Path, [], Map, RGL, 1, 0),
+    member(ReceiverGoal, RGL).
+
+% 2nd Order, Shortest Goal Path(1),
+getPath(CurrentLocation, SenderGoal, SenderGoal, Path, 2, 1, _) :-
+    aux_getPath(CurrentLocation, SenderGoal, Path).
+getPath(CurrentLocation, ReceiverGoal, SenderGoal, Path, 2, 1, Map) :-
+    aux_getPath(CurrentLocation, ReceiverGoal, P1),
+    aux_getPath(ReceiverGoal, SenderGoal, P2),
+    combinePath(P1, P2, Path),
+    getPossibleReceiverMoves(Path, [], Map, RGL, 1, 1),
+    member(ReceiverGoal, RGL).
 
 % [H| X] [X | T] -> [H|X|T]
 combinePath([], Y, Y).
 combinePath(X, [], X).
-combinePath(X, [H|Y], P) :-
+combinePath(X, [H|Y], Path) :-
     append(_, [H], X),
-    append(X, Y, P), !.
-combinePath(X, Y, P) :- append(X, Y, P).
+    append(X, Y, Path), !.
+combinePath(X, Y, Path) :- append(X, Y, Path).
 
 aux_getPath(X, X, []) :- !.
-aux_getPath(X, Y, [X|P]) :- aux_getPathHelper(X, Y, P), !.
+aux_getPath(X, Y, [X|Path]) :- aux_getPathHelper(X, Y, Path), !.
 
 aux_getPathHelper(X, X, []) :- !.
 aux_getPathHelper(H, Y, [X|T]) :-
     length(T, L), L < 10,
-    hueristic_move(H, X, Y),
-    aux_getPathHelper(X, Y, T).
+    findall(X, hueristic_move(H, X, Y), ResultList),
+    member(Z, ResultList),
+    aux_getPathHelper(Z, Y, T).
+
 
 abs(X, Y) :-
     X < 0,
@@ -154,29 +172,23 @@ hueristic_move(C, N, G) :-
 move((CLX, CLY), (NLX, NLY)) :-
     NLY is CLY,
     NLX is CLX + 1,
-    isWithInBounds(NLX),
-    isWithInBounds(NLY).
+    isLegalMove((NLX, NLY)).
 
 move((CLX, CLY), (NLX, NLY)) :-
     NLY is CLY,
     NLX is CLX - 1,
-    isWithInBounds(NLX),
-    isWithInBounds(NLY).
+    isLegalMove((NLX, NLY)).
 
 move((CLX, CLY), (NLX, NLY)) :-
     NLX is CLX,
     NLY is CLY + 1,
-    isWithInBounds(NLX),
-    isWithInBounds(NLY).
+    isLegalMove((NLX, NLY)).
 
 move((CLX, CLY), (NLX, NLY)) :-
     NLX is CLX,
     NLY is CLY - 1,
-    isWithInBounds(NLX),
-    isWithInBounds(NLY).
+    isLegalMove((NLX, NLY)).
 
-
-isWithInBounds(X) :-
-    >(X,0),
-    <(X,4).
+isLegalMove(Point) :-
+    member(Point,[(1,1), (2,1), (3,1), (1,2), (2,2), (3,2), (1,3), (2,3), (3,3)]).
 
