@@ -34,6 +34,8 @@ button:disabled {
 
 .gloabl-container {
     max-width: 300px;
+    display: flex;
+    flex-direction: row;
 }
 
 .controls-container {
@@ -44,13 +46,24 @@ button:disabled {
 }
 
 .player-option {
-    max-width: 50vw;
+    width: 100%;
     margin: 0 auto;
     display: flex;
     justify-content: space-between;
 }
 
-.player-type {
+.options {
     display: flex;
     flex-direction: column;
+}
+
+.options-container {
+    position: absolute;
+    top: 0;
+    left: 0;
+    padding: 0 10px;
+    display: flex;
+    justify-content: space-between;
+    flex-direction: column;
+    /* flex-flow: wrap; */
 }

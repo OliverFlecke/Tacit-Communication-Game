@@ -8,6 +8,12 @@ describe('Testing location', () => {
         expect(location.y).toEqual(0);
     });
 
+    test('Creating a default location', () => {
+        const location = new Location();
+        expect(location.x).toEqual(2);
+        expect(location.y).toEqual(2);
+    });
+
     test('Compare locations', () => {
         const a = new Location(1, 1);
         const b = new Location(1, 1);

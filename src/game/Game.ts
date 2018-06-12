@@ -125,6 +125,7 @@ export default class Game {
                 // Keep track of the rounds that have been solved
                 if (!this.solvedRounds.some(x => Round.equals(x, this._round))) {
                     this.solvedRounds = this.solvedRounds.concat(this._round);
+                    console.log(`Solved rounds: ${this.numberOfSolvedRounds}`);
                 }
                 this._gameState = GameState.Finished;
                 this.updateUI();

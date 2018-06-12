@@ -28,7 +28,7 @@
       "check-type",
       "check-typecast",
       "check-type-operator",
-      "check-preblock",
+      "check-preblock"
     ],
     "member-ordering": false,
     "comment-format": [
