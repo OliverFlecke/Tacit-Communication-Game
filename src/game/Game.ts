@@ -119,7 +119,9 @@ export default class Game {
                 break;
 
             case GameState.Success:
-                this._receiver.addSuccess(Location.actionsToPath(this._round.senderPath), this._round.receiverLocation);
+                const path = Location.actionsToPath(this._round.senderPath);
+                this._receiver.addSuccess(path, this._round.receiverLocation);
+                this._sender.addSuccess(path, this._round.receiverLocation);
                 this._statistics.addSuccess();
 
                 // Keep track of the rounds that have been solved

@@ -34,13 +34,16 @@ export default class Receiver {
         const query = "getReceiverMove(" +
             pathString + ", " +
             errorsString + ", " +
-            mapString + ", X, " +
+            mapString + ", " +
+            "X, " +
             this.mind + ", " +
             strategy + // Strategy
             ").";
         let answers = prolog.execute(this.agentType, query);
 
         const answer: string = answers[0];
+        console.log(`Receiver query: ${query}`);
+        console.log(`Receiver answer: ${answer}`);
         return stringToLocation(answer);
     }
 

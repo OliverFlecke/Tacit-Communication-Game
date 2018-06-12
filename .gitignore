@@ -73,3 +73,4 @@ tests/cases/user/*/**/*.d.ts
 tests/baselines/reference/dt
 
 dist/
+simulations/

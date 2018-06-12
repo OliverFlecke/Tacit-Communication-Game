@@ -2,6 +2,7 @@ import Game from '../src/game/Game';
 import Statistics from '../src/models/Statistics';
 import PlayerType from '../src/models/PlayerType';
 import GameState from '../src/models/GameState';
+import Strategy from '../src/game/Strategy';
 
 describe('Simulating two agents playing against each other', () => {
     let game: Game;
@@ -21,21 +22,27 @@ describe('Simulating two agents playing against each other', () => {
 
     test('0-ToM sender and 0-ToM receiver', () => {
         // Setup game
-        const rounds = 20;
-        game.senderType = PlayerType.ZeroOrder;
-        game.receiverType = PlayerType.ZeroOrder;
+        const rounds = 100;
+        const senderType = PlayerType.ZeroOrder;
+        const receiverType = PlayerType.FirstOrder;
+        const strategy = Strategy.ShortestGoalPath;
+
+        game.senderType = senderType;
+        game.receiverType = receiverType;
+        game.strategy = strategy;
 
         // Assert correct setup
         expect(game.sender).toBeDefined();
         expect(game.receiver).toBeDefined();
-        expect(game.senderType).toEqual(PlayerType.ZeroOrder);
-        expect(game.receiverType).toEqual(PlayerType.ZeroOrder);
+        expect(game.senderType).toEqual(senderType);
+        expect(game.receiverType).toEqual(receiverType);
+        expect(game.strategy).toEqual(strategy);
 
         // Run simulations
         let roundsSinceLastSuccess = 0;
         let i = 0;
-        while (true) {
-        // while (i < rounds) {
+        // while (true) {
+        while (i < rounds) {
             game.simulateRound();
             if (game.numberOfSolvedRounds >= 81) { break; }
             i++;
