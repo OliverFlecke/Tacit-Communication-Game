@@ -18,8 +18,6 @@ aux_subtract([A|C], B, D) :-
 aux_subtract([A|B], C, [A|D]) :-
         aux_subtract(B, C, D).
 
-
-%
 aux_matchMap(_,[],[]).
 
 aux_matchMap(Path, Map, Output) :-
@@ -64,20 +62,38 @@ getPossibleReceiverMoves(_, Errors, _, ReceiverGoal, 0, 0) :-
     aux_subtract([(1,1), (2,1), (3,1), (1,2), (2,2), (3,2), (1,3), (2,3), (3,3)], Errors, ReceiverGoal).
 
 %First Order, Shortest Path(0),
-getPossibleReceiverMoves([H|T], Errors, Map, ReceiverGoal, 1, 0) :-
+getPossibleReceiverMoves([H|T], Errors, Map, ReceiverGoal, Order, Strategy) :-
     append(_, [SenderGoal], [H|T]),
-    findall(X, (isLegalMove(X), getSenderMove(H, X, SenderGoal, [H|T], 0, 0, Map)), RGL),
+    Temp is Order -1,
+    findall(X, (isLegalMove(X), getSenderMove(H, X, SenderGoal, [H|T], Temp, Strategy, Map)), RGL),
     aux_subtract(RGL, Errors, ReceiverGoal),
     length(ReceiverGoal, L),
     L>0.
 
-%First Order, Shortest Goal Path(1),
+/* %First Order, Shortest Goal Path(1),
 getPossibleReceiverMoves([H|T], Errors, Map, ReceiverGoal, 1, 1) :-
     append(_, [SenderGoal], [H|T]),
     findall(X, (isLegalMove(X), getSenderMove(H, X, SenderGoal, [H|T], 0, 1, Map)), RGL),
     aux_subtract(RGL, Errors, ReceiverGoal),
     length(ReceiverGoal, L),
     L>0.
+
+%Second Order, Shortest Path(0),
+getPossibleReceiverMoves([H|T], Errors, Map, ReceiverGoal, 2, 0) :-
+    append(_, [SenderGoal], [H|T]),
+    findall(X, (isLegalMove(X), getSenderMove(H, X, SenderGoal, [H|T], 1, 0, Map)), RGL),
+    aux_subtract(RGL, Errors, ReceiverGoal),
+    length(ReceiverGoal, L),
+    L>0.
+
+%Second Order, Shortest Goal Path(1),
+getPossibleReceiverMoves([H|T], Errors, Map, ReceiverGoal, 2, 1) :-
+    append(_, [SenderGoal], [H|T]),
+    findall(X, (isLegalMove(X), getSenderMove(H, X, SenderGoal, [H|T], 1, 1, Map)), RGL),
+    aux_subtract(RGL, Errors, ReceiverGoal),
+    length(ReceiverGoal, L),
+    L>0. */
+
 
 %Sender
 getSenderMove(_, ReceiverGoal, SenderGoal, Path, _, _, Map) :-
