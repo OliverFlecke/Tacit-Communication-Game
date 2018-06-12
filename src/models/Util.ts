@@ -8,14 +8,14 @@ export function locationsToPrologString(locations: Location[]): string {
 export function mapToPrologString(map: LocationMap<Location>): string {
     let text: string[] = [];
     map.forEach((v, k) => {
-        const location = new Location(v);
+        const location = Location.New(v);
         text.push('{' + locationsToPrologString(k) + ', ' + location.toString() + '}');
     });
     return "[" + text.join(',') + "]";
 }
 
 export function stringToLocation(text: string) : Location {
-    if (typeof text !== 'string') { return Location.New(); }
+    if (typeof text !== 'string') { return new Location(); }
 
     const regex = new RegExp('[1-9]', 'g');
     const matches = text.match(regex);

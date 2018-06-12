@@ -5,6 +5,7 @@ import GameGrid from './GameGridUI';
 import GameState from '../models/GameState';
 import Game from '../game/Game';
 import PlayerType, { PlayerTypeValues } from '../models/PlayerType';
+import Strategy from '../game/Strategy';
 
 export default class GameUI extends React.Component implements IUI {
 
@@ -33,7 +34,7 @@ export default class GameUI extends React.Component implements IUI {
     }
 
     private newRound = () => {
-        this.game.newRound();
+        this.game.reset();
         this.focusGame();
     }
 
@@ -74,45 +75,59 @@ export default class GameUI extends React.Component implements IUI {
         }
     }
 
-    private renderPlayerTypeChoice() {
-        const createRadioButton = (type: PlayerType,
-                player: PlayerType, onChange: (event: ChangeEvent<HTMLInputElement>) => void) => {
-            return (
-                <label
-                    key={`${type} ${player}`}
-                >
-                    <input
-                        type="radio"
-                        value={type}
-                        checked={player === type}
-                        onChange={onChange}
-                    />
-                    {PlayerType[type]}
-                </label>
-            );
+    private onSenderTypeChange = (event: ChangeEvent<HTMLInputElement>) => {
+        this.game.senderType = Number(event.target.value);
+        this.forceUpdate();
+    }
+
+    private onReceiverTypeChange = (event: ChangeEvent<HTMLInputElement>) => {
+        this.game.receiverType = Number(event.target.value);
+        this.forceUpdate();
+    }
+
+    private createRadioButton = (type: PlayerType,
+            player: PlayerType, onChange: (event: ChangeEvent<HTMLInputElement>) => void) => {
+        return (
+            <label
+                key={`${type} ${player}`}
+            >
+                <input
+                    type="radio"
+                    value={type}
+                    checked={player === type}
+                    onChange={onChange}
+                />
+                {PlayerType[type]}
+            </label>
+        );
+    };
+
+    private renderStrategyChoice() {
+        const onChange = (event: ChangeEvent<HTMLInputElement>) => {
+            this.game.strategy = Number(event.target.value);
+            this.forceUpdate();
         };
-
-        const onSenderTypeChange = (event: ChangeEvent<HTMLInputElement>) => {
-            this.game.senderType = Number(event.target.value);
-            this.forceUpdate();
-        }
-
-        const onReceiverTypeChange = (event: ChangeEvent<HTMLInputElement>) => {
-            this.game.receiverType = Number(event.target.value);
-            this.forceUpdate();
-        }
+        const strategies =  Object.keys(Strategy).filter(x => isNaN(Number(x))).map(x => Strategy[x]);
 
         return (
-            <div className='player-option'>
-                <form className='player-type'>
-                    <h2>Sender type</h2>
-                    {PlayerTypeValues().map(x => createRadioButton(x, this.game.senderType, onSenderTypeChange))}
-                </form>
-                <form className='player-type'>
-                    <h2>Receiver type</h2>
-                    {PlayerTypeValues().map(x => createRadioButton(x, this.game.receiverType, onReceiverTypeChange))}
-                </form>
-            </div>
+            <form className='options'>
+                <h2>Strategy</h2>
+                {strategies.map(strategy => {
+                    return (
+                        <label
+                        key={strategy}
+                    >
+                        <input
+                            type="radio"
+                            value={strategy}
+                            checked={this.game.strategy === strategy}
+                            onChange={onChange}
+                        />
+                        {Strategy[strategy]}
+                    </label>
+                    );
+                })}
+            </form>
         );
     }
 
@@ -158,7 +173,17 @@ export default class GameUI extends React.Component implements IUI {
                     hidden={this.game.gameState !== GameState.Finished}
                 />
 
-                {this.renderPlayerTypeChoice()}
+                <div className='options-container'>
+                    <form className='options'>
+                        <h2>Sender type</h2>
+                        {PlayerTypeValues().map(x => this.createRadioButton(x, this.game.senderType, this.onSenderTypeChange))}
+                    </form>
+                    <form className='options'>
+                        <h2>Receiver type</h2>
+                        {PlayerTypeValues().map(x => this.createRadioButton(x, this.game.receiverType, this.onReceiverTypeChange))}
+                    </form>
+                    {this.renderStrategyChoice()}
+                </div>
             </div>
         );
     }
