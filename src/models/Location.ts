@@ -19,13 +19,15 @@ export default class Location {
     }
 
     public constructor(x?: number, y?: number) {
-        this._x = x || 2;
-        this._y = y || 2;
+        this._x = typeof x === 'number' ? x : 2;
+        this._y = typeof y === 'number' ? y : 2;
     }
 
     public static New(obj: any) {
-        // tslint:disable-next-line:no-string-literal
-        return new Location(obj['_x'], obj['_y']);
+        // If the location cannot be read, return an invalid location
+        const x = '_x' in obj ? obj._x : 0;
+        const y = '_y' in obj ? obj._y : 0;
+        return new Location(x, y);
     }
 
     public static equals(a: Location, b: Location): boolean {
@@ -50,7 +52,7 @@ export default class Location {
 
     public static actionsToPath(actions: Action[]): Location[] {
         let locations: Location[] = [];
-        let currentLocation = new Location(2,2);
+        let currentLocation = new Location(2, 2);
         locations.push(currentLocation);
         actions.forEach(action => {
             currentLocation = this.getNextLocation(currentLocation, action);
@@ -69,10 +71,10 @@ export default class Location {
         let i = 0;
         do {
             let currentLocation = path[i];
-            let nextLocation = path.length>i+1 ? path[i + 1] : path[i];
+            let nextLocation = path.length > i + 1 ? path[i + 1] : path[i];
             actions.push(locationsToAction(currentLocation, nextLocation));
             i++;
-        } while(i < path.length - 1)
+        } while (i < path.length - 1)
 
         return actions;
     }

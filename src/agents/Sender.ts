@@ -31,8 +31,8 @@ export default class Sender {
             ').';
         let answers = prolog.execute(this.agentType, query);
         const answer: string = answers[0];
-        console.log(query);
-        console.log(answer);
+        // console.log(query);
+        // console.log(answer);
         const regex = new RegExp('\([1-9], [1-9]\)', 'g');
         const matches = answer.match(regex);
         if (matches) {

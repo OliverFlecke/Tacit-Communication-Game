@@ -93,7 +93,8 @@ export default class GameGrid extends React.Component<IGameGridProps, {}> {
                         hidden={this.props.game.gameState === GameState.Success ||
                             this.props.game.gameState === GameState.Failure ||
                             this.props.game.gameState === GameState.Receiver
-                            || this.props.game.receiverType === PlayerType.Human
+                            || (this.props.game.receiverType === PlayerType.Human
+                                && this.props.game.senderType !== PlayerType.Human)
                         }
                     />
                     <span
@@ -102,7 +103,8 @@ export default class GameGrid extends React.Component<IGameGridProps, {}> {
                         hidden={this.props.game.gameState === GameState.Success ||
                             this.props.game.gameState === GameState.Failure ||
                             this.props.game.gameState === GameState.Receiver
-                            || this.props.game.receiverType === PlayerType.Human
+                            || (this.props.game.receiverType === PlayerType.Human
+                                && this.props.game.senderType !== PlayerType.Human)
                         }
                     />
                 </div>

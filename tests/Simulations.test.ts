@@ -3,28 +3,43 @@ import Statistics from '../src/models/Statistics';
 import PlayerType from '../src/models/PlayerType';
 
 describe('Simulating two agents playing against each other', () => {
-    it('0-ToM sender and 0-ToM receiver', () => {
+    let game: Game;
+
+    beforeEach(() => {
+        game = new Game();
+    }, 0);
+
+    afterEach(() => {
+        // Display simulation results
+        const stats: Statistics = game.statistics;
+        const numRounds = stats.failures + stats.successes;
+        console.log(`Number of rounds: ${numRounds} \tSuccesses: ${stats.successes} \tFailures: ${stats.failures}`);
+        console.log(`Receiver map of successes: ${game.numberOfSolvedRounds}`)
+
+    }, 0);
+
+    test('0-ToM sender and 0-ToM receiver', () => {
         // Setup game
-        const rounds = 400;
-        const game = new Game();
+        const rounds = 20;
         game.senderType = PlayerType.FirstOrder;
         game.receiverType = PlayerType.ZeroOrder;
 
+        // Assert correct setup
+        expect(game.sender).toBeDefined();
+        expect(game.receiver).toBeDefined();
+        expect(game.senderType).toEqual(PlayerType.FirstOrder);
+        expect(game.receiverType).toEqual(PlayerType.ZeroOrder);
+
         // Run simulations
-        // for (let i = 0; i < rounds; i++) {
-        //     game.simulateRound();
-        //     if (game.receiver.successes.size >= 81) {
-        //         break;
-        //     }
-        // }
+        let i = 0;
         while (true) {
+        // while (i < rounds) {
             game.simulateRound();
-            if (game.receiver.successes.size >= 81) break;
+            if (game.numberOfSolvedRounds >= 81) { break; }
+            i++;
         }
 
-        // Display simulation results
-        const stats: Statistics = game.statistics;
-        console.log(`Successes: ${stats.successes} \tFailures: ${stats.failures}`);
-        console.log(`Receiver map of successes: ${game.receiver.successes.size}`)
-    })
+        // Assert
+        expect(game.numberOfSolvedRounds).toEqual(81);
+    });
 });

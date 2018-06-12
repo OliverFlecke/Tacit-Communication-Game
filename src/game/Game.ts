@@ -69,6 +69,11 @@ export default class Game {
         return this._sender;
     }
 
+    public solvedRounds: Round[] = [];
+    public get numberOfSolvedRounds() {
+        return this.solvedRounds.length;
+    }
+
     private _ui?: IUI;
 
     constructor(ui?: IUI) {
@@ -88,11 +93,11 @@ export default class Game {
      * Generate a new round of the game
      * @returns A game state
      */
-    public newRound() {
+    public reset(round?: Round) {
         this._gameState = GameState.Initial;
         this._position = new Location();
         this._path = [];
-        this._round = new Round();
+        this._round = round ? round : Round.getUniqueRound(this.solvedRounds);
         this.updateUI();
     }
 
@@ -116,6 +121,11 @@ export default class Game {
             case GameState.Success:
                 this._receiver.addSuccess(Location.actionsToPath(this._round.senderPath), this._round.receiverLocation);
                 this._statistics.addSuccess();
+
+                // Keep track of the rounds that have been solved
+                if (!this.solvedRounds.some(x => Round.equals(x, this._round))) {
+                    this.solvedRounds = this.solvedRounds.concat(this._round);
+                }
                 this._gameState = GameState.Finished;
                 this.updateUI();
                 break;
@@ -154,7 +164,8 @@ export default class Game {
     }
 
     public simulateRound() {
-        this.newRound();
+        const round = Round.getUniqueRound(this.solvedRounds);
+        this.reset(round);
         this.startRound();
         this.endTurn();
         this.endTurn();

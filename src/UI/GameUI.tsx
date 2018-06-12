@@ -33,7 +33,7 @@ export default class GameUI extends React.Component implements IUI {
     }
 
     private newRound = () => {
-        this.game.newRound();
+        this.game.reset();
         this.focusGame();
     }
 
