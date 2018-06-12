@@ -54,6 +54,7 @@ export default class GameGrid extends React.Component<IGameGridProps, {}> {
     }
 
     public render() {
+        const state = this.props.game.gameState;
         return (
             <div
                 className='game-container'
@@ -79,20 +80,22 @@ export default class GameGrid extends React.Component<IGameGridProps, {}> {
                         id='sender'
                         className='square player'
                         style={this.GetCoordinates()}
-                        hidden={this.props.game.gameState !== GameState.Sender}
+                        hidden={state !== GameState.Sender &&
+                            state !== GameState.SenderDone}
                     />
                     <span
                         id='receiver'
                         className='circle player'
                         style={this.GetCoordinates()}
-                        hidden={this.props.game.gameState !== GameState.Receiver}
+                        hidden={state !== GameState.Receiver &&
+                            state !== GameState.ReceiverDone}
                     />
                     <span
                         className='senderGoal player'
                         style={this.GetCoordinates(Player.Sender)}
-                        hidden={this.props.game.gameState === GameState.Success ||
-                            this.props.game.gameState === GameState.Failure ||
-                            this.props.game.gameState === GameState.Receiver
+                        hidden={state !== GameState.Initial &&
+                            state !== GameState.Sender &&
+                            state !== GameState.SenderDone
                             || (this.props.game.receiverType === PlayerType.Human
                                 && this.props.game.senderType !== PlayerType.Human)
                         }
@@ -100,9 +103,9 @@ export default class GameGrid extends React.Component<IGameGridProps, {}> {
                     <span
                         className='receiverGoal player'
                         style={this.GetCoordinates(Player.Receiver)}
-                        hidden={this.props.game.gameState === GameState.Success ||
-                            this.props.game.gameState === GameState.Failure ||
-                            this.props.game.gameState === GameState.Receiver
+                        hidden={state !== GameState.Initial &&
+                            state !== GameState.Sender &&
+                            state !== GameState.SenderDone
                             || (this.props.game.receiverType === PlayerType.Human
                                 && this.props.game.senderType !== PlayerType.Human)
                         }

@@ -29,6 +29,7 @@ export default class GameUI extends React.Component implements IUI {
      */
     private endTurn = () => {
         this.game.endTurn();
+        // this.game.update();
         this.focusGame();
     }
 

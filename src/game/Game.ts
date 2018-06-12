@@ -115,7 +115,7 @@ export default class Game {
                 this._round.receiverLocation = this._position;
                 this._position = new Location();
                 this._gameState = this.getFinalGameState();
-                this.updateUI();
+                this.update();
                 break;
 
             case GameState.Success:
@@ -127,7 +127,6 @@ export default class Game {
                 // Keep track of the rounds that have been solved
                 if (!this.solvedRounds.some(x => Round.equals(x, this._round))) {
                     this.solvedRounds = this.solvedRounds.concat(this._round);
-                    console.log(`Solved rounds: ${this.numberOfSolvedRounds}`);
                 }
                 this._gameState = GameState.Finished;
                 this.updateUI();
@@ -152,18 +151,24 @@ export default class Game {
                 const interval = setInterval(() => {
                     const action = path[i++];
                     this.updateLocation(action, Player.Sender);
-                    if (i > path.length) clearInterval(interval);
+                    if (i > path.length) {
+                        clearInterval(interval);
+                        this._gameState = GameState.SenderDone;
+                    }
                 }, this._ui.refreshDelay);
             }
             else {
                 for (const action of path) {
                     this.updateLocation(action, Player.Sender);
                 }
+                this._gameState = GameState.SenderDone;
             }
         }
         else if (this._gameState === GameState.Receiver && this.receiverType !== PlayerType.Human) {
             this._position = this._receiver.getMove(Location.actionsToPath(this._path), this.strategy);
+            this._gameState = GameState.ReceiverDone;
         }
+
     }
 
     public simulateRound() {
