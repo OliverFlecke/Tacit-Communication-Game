@@ -34,5 +34,10 @@ describe("Testing prolog is working", () => {
         console.log(answers);
     })
 
+    test.only('receiver move', () => {
+        let answer = prolog.execute('sender', 'getReceiverMove([(2, 2),(1, 2),(2, 2),(3, 2),(3, 1)], [], [], X, 1, 1).');
+        expect(answer[0]).toEqual('X = (1, 2) ;');
+    });
+
 
 })

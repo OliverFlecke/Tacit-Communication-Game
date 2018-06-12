@@ -1,6 +1,9 @@
 :- use_module(library(lists)).
 :- use_module(library(random)).
 
+% Utils
+myCall(move, A, B, C) :- move(A, B, C).
+myCall(hueristic_move, A, B, C) :- hueristic_move(A, B, C).
 
 /* Strategy:
     0 - Short
@@ -172,10 +175,13 @@ aux_getPath(X, Y, [X|Path], MoveFunction) :- aux_getPathHelper(X, Y, Path, MoveF
 aux_getPathHelper(X, X, [], _).
 aux_getPathHelper(X, Y, [H|T], MoveFunction) :-
     X \== Y,
-    findall(J, call(MoveFunction, X, J, Y), ResultList),
+    % length(T, L), (L < 10 -> (
+    findall(J, myCall(MoveFunction, X, J, Y), ResultList),
     member(H, ResultList),
     aux_getPathHelper(H, Y, T, MoveFunction).
-
+        % ;
+        % (!, fail)).
+aux_getPathHelper(_, _, P, _) :- length(P, L), L > 10, !.
 aux_getPathHelper(X, X, [H|T], MoveFunction) :-
     findall(J, move(X, J, X), ResultList),
     member(H, ResultList),

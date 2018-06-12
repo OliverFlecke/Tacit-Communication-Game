@@ -22,7 +22,7 @@ require("./lib/lists.js")(pl);
 require("./lib/random.js")(pl);
 
 exports.execute = function execute(agent, query) {
-    let session = pl.create(10000000);
+    let session = pl.create(1000000000000);
 
     // Load the program
     let program = readFile(agent);

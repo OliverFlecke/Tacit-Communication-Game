@@ -1,7 +1,7 @@
 (function() {
-	
+
 	// PARSER
-	
+
 	var indexOf;
 	if(!Array.prototype.indexOf) {
 		indexOf = function(array, elem) {
@@ -325,12 +325,12 @@
 		var max_priority = session.__get_max_priority();
 		var next_priority = session.__get_next_priority(priority);
 		var aux_start = start;
-		
+
 		// Prefix operators
 		if(tokens[start].name === "atom") {
 			var token = tokens[start++];
 			var classes = session.__lookup_operator_classes(priority, token.value);
-			
+
 			// Signed number
 			if(token.value === "-" || token.value === "+") {
 				var number = tokens[start];
@@ -342,7 +342,7 @@
 					};
 				}
 			}
-			
+
 			// Associative prefix operator
 			if(classes && classes.indexOf("fy") > -1) {
 				var expr = parseExpr(session, tokens, start, priority, toplevel);
@@ -457,7 +457,7 @@
 			start++;
 			if(tokens[start-1].space) return {type: SUCCESS, len: start, value: new pl.type.Term(atom.value, exprs)};
 			if(tokens[start] && tokens[start].name === "l_paren") {
-				if(tokens[start+1] && tokens[start+1].name === "r_paren") 
+				if(tokens[start+1] && tokens[start+1].name === "r_paren")
 					return {type: ERROR, derived: true, value: pl.error.syntax(tokens[start+1], "argument expected")};
 				var expr = parseExpr(session, tokens, ++start, "999", true);
 				if(expr.type === ERROR) {
@@ -489,7 +489,7 @@
 
 	// Parse a list
 	function parseList(session, tokens, start) {
-		if(!tokens[start]) 
+		if(!tokens[start])
 			return {type: ERROR, derived: false, value: pl.error.syntax(tokens[start-1], "[ expected")};
 		if(tokens[start] && tokens[start].name === "l_brace") {
 			var expr = parseExpr(session, tokens, ++start, "999", true);
@@ -502,7 +502,7 @@
 				}
 				return {type: ERROR, derived: true, value: pl.error.syntax(tokens[start], "] expected")};
 			}
-			
+
 			start = expr.len;
 
 			while(tokens[start] && tokens[start].name === "atom" && tokens[start].value === ",") {
@@ -598,7 +598,7 @@
 		} while( true );
 		return true;
 	}
-	
+
 	// Parse a query
 	function parseQuery(session, string) {
 		var tokenizer = new Tokenizer( session );
@@ -617,7 +617,7 @@
 					var token = tokens[expr_position];
 					return new Term("throw", [pl.error.syntax(token ? token : tokens[expr_position-1], ". or operator expected", !token)] );
 				}
-				
+
 				n = expr.len + 1;
 			} else {
 				return new Term("throw", [expr.value]);
@@ -627,7 +627,7 @@
 	}
 
 
-	
+
 	// UTILS
 
 	// Rule to DCG
@@ -712,7 +712,7 @@
 			};
 		}
 	}
-	
+
 	// String to Prolog number
 	function strToNum( string ) {
 		var regex = /^(([0-9]+)|([0-9]+\.[0-9]+)|(0b[01]+)|(0x[0-9a-f]+)|(0o[0-7]+))$/i;
@@ -731,7 +731,7 @@
 			return new Num( parseInt( string ), false );
 		}
 	}
-	
+
 	// List to Prolog list
 	function arrayToList( array, cons ) {
 		var list = cons ? cons : new pl.type.Term( "[]", [] );
@@ -739,7 +739,7 @@
 			list = new pl.type.Term( ".", [array[i], list] );
 		return list;
 	}
-	
+
 	// Remove element from array
 	function remove( array, element ) {
 		for( var i = array.length - 1; i >= 0; i-- ) {
@@ -748,35 +748,35 @@
 			}
 		}
 	}
-	
-	
+
+
 
 	// PROLOG OBJECTS
-	
+
 	// Variables
 	function Var( id ) {
 		this.id = id;
 	}
-	
+
 	// Numbers
 	function Num( value, is_float ) {
 		this.is_float = is_float !== undefined ? is_float : parseInt( value ) !== value;
 		this.value = this.is_float ? value : parseInt( value );
 	}
-	
+
 	// Terms
 	function Term( id, args ) {
 		this.id = id;
 		this.args = args || [];
 		this.indicator = id + "/" + this.args.length;
 	}
-	
+
 	// Substitutions
 	function Substitution( links ) {
 		links = links || {};
 		this.links = links;
 	}
-	
+
 	// States
 	function State( goal, subs, parent ) {
 		subs = subs || new Substitution();
@@ -785,7 +785,7 @@
 		this.substitution = subs;
 		this.parent = parent;
 	}
-	
+
 	// Rules
 	function Rule( head, body ) {
 		this.head = head;
@@ -803,7 +803,7 @@
 		this.public = [];
 		this.limit = limit;
 		this.current_limit = limit;
-		this.flag = {	
+		this.flag = {
 			bounded: pl.flag.bounded.value,
 			max_integer: pl.flag.max_integer.value,
 			min_integer: pl.flag.min_integer.value,
@@ -839,7 +839,7 @@
 		};
 		this.__calls = [];
 	}
-	
+
 	// Modules
 	function Module( id, rules ) {
 		this.id = id;
@@ -850,17 +850,17 @@
 
 
 	// PROLOG OBJECTS TO STRING
-	
+
 	// Variables
 	Var.prototype.toString = function() {
 		return this.id;
 	};
-	
+
 	// Numbers
 	Num.prototype.toString = function() {
 		return this.is_float && indexOf(this.value.toString(), ".") === -1 ? this.value + ".0" : this.value.toString();
 	};
-	
+
 	// Terms
 	Term.prototype.toString = function() {
 		switch( this.indicator ){
@@ -888,7 +888,7 @@
 				return id + (this.args.length ? "(" + this.args.join(", ") + ")" : "");
 		}
 	};
-	
+
 	// Substitutions
 	Substitution.prototype.toString = function() {
 		var str = "{";
@@ -902,7 +902,7 @@
 		str += "}";
 		return str;
 	};
-	
+
 	// States
 	State.prototype.toString = function() {
 		if( this.goal === null ) {
@@ -911,7 +911,7 @@
 			return "<" + this.goal.toString() + ", " + this.substitution.toString() + ">";
 		}
 	};
-	
+
 	// Rules
 	Rule.prototype.toString = function() {
 		if( !this.body ) {
@@ -920,21 +920,21 @@
 			return this.head + " :- " + this.body + ".";
 		}
 	};
-	
-	
-	
+
+
+
 	// CLONE PROLOG OBJECTS
-	
+
 	// Variables
 	Var.prototype.clone = function() {
 		return new Var( this.id );
 	};
-	
+
 	// Numbers
 	Num.prototype.clone = function() {
 		return new Num( this.value, this.is_float );
 	};
-	
+
 	// Terms
 	Term.prototype.clone = function() {
 		if( this.args.length === 0 )
@@ -943,7 +943,7 @@
 			return arg.clone();
 		} ) );
 	};
-	
+
 	// Substitutions
 	Substitution.prototype.clone = function() {
 		var links = {};
@@ -953,32 +953,32 @@
 		}
 		return new Substitution( links );
 	};
-	
+
 	// States
 	State.prototype.clone = function() {
 		return new State( this.goal.clone(), this.substitution.clone(), this.parent );
 	};
-	
+
 	// Rules
 	Rule.prototype.clone = function() {
 		return new Rule( this.head.clone(), this.body !== null ? this.body.clone() : null );
 	};
-	
-	
-	
-	
+
+
+
+
 	// COMPARE PROLOG OBJECTS
-	
+
 	// Variables
 	Var.prototype.equals = function( obj ) {
 		return pl.type.is_variable( obj ) && this.id === obj.id;
 	};
-	
+
 	// Numbers
 	Num.prototype.equals = function( obj ) {
 		return pl.type.is_number( obj ) && this.value === obj.value && this.is_float === obj.is_float;
 	};
-	
+
 	// Terms
 	Term.prototype.equals = function( obj ) {
 		if( !pl.type.is_term( obj ) || this.indicator !== obj.indicator ) {
@@ -991,7 +991,7 @@
 		}
 		return true;
 	};
-	
+
 	// Substitutions
 	Substitution.prototype.equals = function( obj ) {
 	var link;
@@ -1012,31 +1012,31 @@
 		}
 		return true;
 	};
-	
+
 	// States
 	State.prototype.equals = function( obj ) {
 		return pl.type.is_state( obj ) && this.goal.equals( obj.goal ) && this.substitution.equals( obj.substitution ) && this.parent == obj.parent;
 	};
-	
+
 	// Rules
 	Rule.prototype.equals = function( obj ) {
 		return pl.type.is_rule( obj ) && this.head.equals( obj.head ) && (this.body === null && obj.body === null || this.body !== null && this.body.equals( obj.body ));
 	};
-	
-	
-	
+
+
+
 	// RENAME VARIABLES OF PROLOG OBJECTS
-	
+
 	// Variables
 	Var.prototype.rename = function( session ) {
 		return session.get_free_variable( this );
 	};
-	
+
 	// Numbers
 	Num.prototype.rename = function( _ ) {
 		return this;
 	};
-	
+
 	// Terms
 	Term.prototype.rename = function( session ) {
 		if( this.args.length === 0 )
@@ -1045,33 +1045,33 @@
 			return arg.rename( session );
 		} ) );
 	};
-	
+
 	// Rules
 	Rule.prototype.rename = function( session ) {
 		return new Rule( this.head.rename( session ), this.body !== null ? this.body.rename( session ) : null );
 	};
-	
-	
-	
+
+
+
 	// GET VARIABLES FROM PROLOG OBJECTS
-	
+
 	// Variables
 	Var.prototype.variables = function() {
 		return [this.id];
 	};
-	
+
 	// Numbers
 	Num.prototype.variables = function() {
 		return [];
 	};
-	
+
 	// Terms
 	Term.prototype.variables = function() {
 		return [].concat.apply( [], map( this.args, function( arg ) {
 			return arg.variables();
 		} ) );
 	};
-	
+
 	// Rules
 	Rule.prototype.variables = function() {
 		if( this.body === null ) {
@@ -1080,11 +1080,11 @@
 			return this.head.variables().concat( this.body.variables() );
 		}
 	};
-	
-	
-	
+
+
+
 	// APPLY SUBSTITUTIONS TO PROLOG OBJECTS
-	
+
 	// Variables
 	Var.prototype.apply = function( subs ) {
 		if( subs.lookup( this.id ) ) {
@@ -1092,12 +1092,12 @@
 		}
 		return this;
 	};
-	
+
 	// Numbers
 	Num.prototype.apply = function( _ ) {
 		return this;
 	};
-	
+
 	// Terms
 	Term.prototype.apply = function( subs ) {
 		if( this.args.length === 0 )
@@ -1106,12 +1106,12 @@
 			return arg.apply( subs );
 		} ) );
 	};
-	
+
 	// Rules
 	Rule.prototype.apply = function( subs ) {
 		return new Rule( this.head.apply( subs ), this.body !== null ? this.body.apply( subs ) : null );
 	};
-	
+
 	// Substitutions
 	Substitution.prototype.apply = function( subs ) {
 		var link, links = {};
@@ -1121,11 +1121,11 @@
 		}
 		return new Substitution( links );
 	};
-	
-	
-	
+
+
+
 	// UNIFY PROLOG OBJECTS
-	
+
 	// Variables
 	Var.prototype.unify = function( obj, occurs_check ) {
 		if( occurs_check && indexOf( obj.variables(), this.id ) !== -1 && !pl.type.is_variable( obj ) ) {
@@ -1135,7 +1135,7 @@
 		links[this.id] = obj;
 		return new State( obj, new Substitution( links ) );
 	};
-	
+
 	// Numbers
 	Num.prototype.unify = function( obj, _ ) {
 		if( pl.type.is_number( obj ) && this.value == obj.value && this.is_float == obj.is_float ) {
@@ -1143,7 +1143,7 @@
 		}
 		return null;
 	};
-	
+
 	// Terms
 	Term.prototype.unify = function( obj, occurs_check ) {
 		if( pl.type.is_term( obj ) && this.indicator == obj.indicator ) {
@@ -1160,11 +1160,11 @@
 		}
 		return null;
 	};
-	
-	
-	
+
+
+
 	// SELECTION FUNCTION
-	
+
 	// Select term
 	Term.prototype.select = function() {
 		if( this.indicator === ",/2" ) {
@@ -1173,7 +1173,7 @@
 			return this;
 		}
 	};
-	
+
 	// Replace term
 	Term.prototype.replace = function( expr ) {
 		if( this.indicator === ",/2" ) {
@@ -1195,9 +1195,9 @@
 			return this === expr;
 		}
 	};
-	
-	
-	
+
+
+
 	// PROLOG SESSIONS
 
 	// Add a rule
@@ -1217,12 +1217,12 @@
 		}
 		return false;
 	};
-	
+
 	// Get maximum priority of the operators
 	Session.prototype.__get_max_priority = function() {
 		return "1200";
 	};
-	
+
 	// Get next priority of the operators
 	Session.prototype.__get_next_priority = function( priority ) {
 		var max = 0;
@@ -1234,7 +1234,7 @@
 		}
 		return max.toString();
 	};
-	
+
 	// Get classes of an operator
 	Session.prototype.__lookup_operator_classes = function( priority, operator ) {
 		if( this.__operators[priority] ) {
@@ -1242,7 +1242,7 @@
 		}
 		return false;
 	};
-	
+
 	// Throw a warning
 	Session.prototype.throw_warning = function( warning ) {
 		this.warnings.push( warning );
@@ -1293,7 +1293,7 @@
 		this.points = [];
 		return parseQuery( this, string );
 	};
-	
+
 	// Get free variable
 	Session.prototype.get_free_variable = function( variable ) {
 		var variables = [];
@@ -1312,7 +1312,7 @@
 		}
 		return new Var( this.renamed_variables[variable.id] );
 	};
-	
+
 	// Get next free variable
 	Session.prototype.next_free_variable = function() {
 		this.rename++;
@@ -1324,12 +1324,12 @@
 		}
 		return new Var( pl.format_variable( this.rename ) );
 	};
-	
+
 	// Check if a predicate is public
 	Session.prototype.is_public_predicate = function( indicator ) {
 		return indexOf( this.public, indicator ) !== -1;
 	};
-	
+
 	// Copy context from other session
 	Session.prototype.copy_context = function( session ) {
 		this.rules = session.rules;
@@ -1346,23 +1346,23 @@
 		this.__char_conversion = session.__char_conversion;
 		this.__operators = session.__operators;
 	};
-	
+
 	// Insert states at the beginning
 	Session.prototype.prepend = function( states ) {
 		this.points = states.concat( this.points );
 	};
-	
+
 	// Remove the selected term and prepend the current state
 	Session.prototype.success = function( point, parent ) {
 		var parent = typeof parent === "undefined" ? point : parent;
 		this.prepend( [new State( point.goal.replace( null ), point.substitution, parent ) ] );
 	};
-	
+
 	// Throw error
 	Session.prototype.throwError = function( error ) {
 		this.prepend( [new State( new Term( "throw", [error] ), new Substitution(), null, null )] );
 	};
-	
+
 	// Resolution step
 	Session.prototype.step = function() {
 		if( this.points.length === 0 ) {
@@ -1419,7 +1419,7 @@
 		}
 		return asyn;
 	};
-	
+
 	// Find next computed answer
 	Session.prototype.answer = function( success ) {
 		success = success || function( _ ) { };
@@ -1429,7 +1429,7 @@
 		}
 		this.again();
 	};
-	
+
 	// Find all computed answers
 	Session.prototype.answers = function( callback, max ) {
 		answers = max || 1000;
@@ -1475,21 +1475,21 @@
 			}
 		}
 	};
-	
-	
-	
+
+
+
 	// INTERPRET EXPRESSIONS
-	
+
 	// Variables
 	Var.prototype.interpret = function( session ) {
 		return pl.error.instantiation( session.level );
 	};
-	
+
 	// Numbers
 	Num.prototype.interpret = function( session ) {
 		return this;
 	};
-	
+
 	// Terms
 	Term.prototype.interpret = function( session ) {
 		if( pl.type.is_unitary_list( this ) ) {
@@ -1498,11 +1498,11 @@
 			return pl.operate( session, this );
 		}
 	};
-	
-	
-	
+
+
+
 	// COMPARE PROLOG OBJECTS
-	
+
 	// Variables
 	Var.prototype.compare = function( obj ) {
 		if( this.id < obj.id ) {
@@ -1513,7 +1513,7 @@
 			return 0;
 		}
 	};
-	
+
 	// Numbers
 	Num.prototype.compare = function( obj ) {
 		if( this.value === obj.value && this.is_float === obj.is_float ) {
@@ -1524,7 +1524,7 @@
 			return 1;
 		}
 	};
-	
+
 	// Terms
 	Term.prototype.compare = function( obj ) {
 		if( this.args.length < obj.args.length || this.args.length === obj.args.length && this.id < obj.id ) {
@@ -1541,11 +1541,11 @@
 			return 0;
 		}
 	};
-	
 
-	
+
+
 	// SUBSTITUTIONS
-	
+
 	// Lookup variable
 	Substitution.prototype.lookup = function( variable ) {
 		if( this.links[variable] ) {
@@ -1554,7 +1554,7 @@
 			return null;
 		}
 	};
-	
+
 	// Filter variables
 	Substitution.prototype.filter = function( predicate ) {
 		var links = {};
@@ -1567,7 +1567,7 @@
 		}
 		return new Substitution( links );
 	};
-	
+
 	// Exclude variables
 	Substitution.prototype.exclude = function( variables ) {
 		var links = {};
@@ -1579,14 +1579,14 @@
 		}
 		return new Substitution( links );
 	};
-	
+
 	// Add link
 	Substitution.prototype.add = function( variable, value ) {
 		var subs = new Substitution();
 		subs.links[variable] = value;
 		return subs;
 	};
-	
+
 	// Get domain
 	Substitution.prototype.domain = function( plain ) {
 		var f = plain === true ? function(x){return x;} : function(x){return new Var(x);};
@@ -1595,33 +1595,33 @@
 			vars.push( f(x) );
 		return vars;
 	};
-	
-	
-	
+
+
+
 	// GENERATE JAVASCRIPT CODE FROM PROLOG OBJECTS
-	
+
 	// Variables
 	Var.prototype.compile = function() {
 		return 'new pl.type.Var("' + this.id.toString() + '")';
 	};
-	
+
 	// Numbers
 	Num.prototype.compile = function() {
 		return 'new pl.type.Num(' + this.value.toString() + ', ' + this.is_float.toString() + ')';
 	};
-	
+
 	// Terms
 	Term.prototype.compile = function() {
 		return 'new pl.type.Term("' + this.id.replace(/"/g, '\\"') + '", [' + map( this.args, function( arg ) {
 			return arg.compile();
 		} ) + '])';
 	};
-	
+
 	// Rules
 	Rule.prototype.compile = function() {
 		return 'new pl.type.Rule(' + this.head.compile() + ', ' + (this.body === null ? 'null' : this.body.compile()) + ')';
 	};
-	
+
 	// Sessions
 	Session.prototype.compile = function() {
 		var str, obj = [], rules;
@@ -1639,25 +1639,25 @@
 		}
 		return "{" + obj.join() + "};";
 	};
-	
-	
-	
+
+
+
 	// PROLOG
 
 	var pl = {
-		
+
 		// Modules
 		module: {},
-		
+
 		// Parser
 		parser: {
 			tokenizer: Tokenizer,
 			expression: parseExpr
 		},
-		
+
 		// Types
 		type: {
-			
+
 			// Objects
 			Var: Var,
 			Num: Num,
@@ -1667,10 +1667,10 @@
 			Module: Module,
 			Session: Session,
 			Substitution: Substitution,
-			
+
 			// Order
 			order: [Var, Num, Term],
-			
+
 			// Compare types
 			compare: function( x, y ) {
 				var ord_x = indexOf( pl.type.order, x.constructor );
@@ -1683,87 +1683,87 @@
 					return 0;
 				}
 			},
-			
+
 			// Is a substitution
 			is_substitution: function( obj ) {
 				return obj instanceof Substitution;
 			},
-			
+
 			// Is a state
 			is_state: function( obj ) {
 				return obj instanceof State;
 			},
-			
+
 			// Is a rule
 			is_rule: function( obj ) {
 				return obj instanceof Rule;
 			},
-			
+
 			// Is a variable
 			is_variable: function( obj ) {
 				return obj instanceof Var;
 			},
-			
+
 			// Is an anonymous variable
 			is_anonymous_var: function( obj ) {
 				return obj instanceof Var && obj.id === "_";
 			},
-			
+
 			// Is a callable term
 			is_callable: function( obj ) {
 				return obj instanceof Term;
 			},
-			
+
 			// Is a number
 			is_number: function( obj ) {
 				return obj instanceof Num;
 			},
-			
+
 			// Is an integer
 			is_integer: function( obj ) {
 				return obj instanceof Num && !obj.is_float;
 			},
-			
+
 			// Is a float
 			is_float: function( obj ) {
 				return obj instanceof Num && obj.is_float;
 			},
-			
+
 			// Is a term
 			is_term: function( obj ) {
 				return obj instanceof Term;
 			},
-			
+
 			// Is an atom
 			is_atom: function( obj ) {
 				return obj instanceof Term && obj.args.length === 0;
 			},
-			
+
 			// Is atomic
 			is_atomic: function( obj ) {
 				return obj instanceof Term && obj.args.length === 0 || obj instanceof Num;
 			},
-			
+
 			// Is compound
 			is_compound: function( obj ) {
 				return obj instanceof Term && obj.args.length > 0;
 			},
-			
+
 			// Is a list
 			is_list: function( obj ) {
 				return obj instanceof Term && (obj.indicator === "[]/0" || obj.indicator === "./2");
 			},
-			
+
 			// Is an empty list
 			is_empty_list: function( obj ) {
 				return obj instanceof Term && obj.indicator === "[]/0";
 			},
-			
+
 			// Is a non empty list
 			is_non_empty_list: function( obj ) {
 				return obj instanceof Term && obj.indicator === "./2";
 			},
-			
+
 			// Is a fully list
 			is_fully_list: function( obj ) {
 				while( obj instanceof Term && obj.indicator === "./2" ) {
@@ -1771,7 +1771,7 @@
 				}
 				return obj instanceof Var || obj instanceof Term && obj.indicator === "[]/0";
 			},
-			
+
 			// Is a instantiated list
 			is_instantiated_list: function( obj ) {
 				while( obj instanceof Term && obj.indicator === "./2" ) {
@@ -1779,52 +1779,52 @@
 				}
 				return obj instanceof Term && obj.indicator === "[]/0";
 			},
-			
+
 			// Is an unitary list
 			is_unitary_list: function( obj ) {
 				return obj instanceof Term && obj.indicator === "./2" && obj.args[1] instanceof Term && obj.args[1].indicator === "[]/0";
 			},
-			
+
 			// Is a character
 			is_character: function( obj ) {
 				return obj instanceof Term && obj.id.length === 1;
 			},
-			
+
 			// Is a character
 			is_character_code: function( obj ) {
 				return obj instanceof Num && !obj.is_float;
 			},
-			
+
 			// Is an operator
 			is_operator: function( obj ) {
 				return obj instanceof Term && pl.arithmetic.evaluation[obj.indicator];
 			},
-			
+
 			// Is a directive
 			is_directive: function( obj ) {
 				return obj instanceof Term && pl.directive[obj.indicator] !== undefined;
 			},
-			
+
 			// Is a built-in predicate
 			is_builtin: function( obj ) {
 				return obj instanceof Term && pl.predicate[obj.indicator] !== undefined;
 			},
-			
+
 			// Is an error
 			is_error: function( obj ) {
 				return obj instanceof Term && obj.indicator === "throw/1";
 			},
-			
+
 			// Is a predicate indicator
 			is_predicate_indicator: function( obj ) {
 				return obj instanceof Term && obj.indicator === "//2" && obj.args[0] instanceof Term && obj.args[0].args.length === 0 && obj.args[1] instanceof Num && obj.args[1].is_float === false;
 			},
-			
+
 			// Is a flag
 			is_flag: function( obj ) {
 				return obj instanceof Term && obj.args.length === 0 && pl.flag[obj.id] !== undefined;
 			},
-			
+
 			// Is a valid value for a flag
 			is_value_flag: function( flag, obj ) {
 				if( !pl.type.is_flag( flag ) ) return false;
@@ -1834,22 +1834,22 @@
 				}
 				return false;
 			},
-			
+
 			// Is a modifiable flag
 			is_modifiable_flag: function( obj ) {
 				return pl.type.is_flag( obj ) && pl.flag[obj.id].changeable;
 			},
-			
+
 			// Is an existing module
 			is_module: function( obj ) {
 				return obj instanceof Term && obj.indicator === "library/1" && obj.args[0] instanceof Term && obj.args[0].args.length === 0 && pl.module[obj.args[0].id] !== undefined;
 			}
-			
+
 		},
 
 		// Arithmetic functions
 		arithmetic: {
-			
+
 			// Evaluation
 			evaluation: {
 				"e/0": {
@@ -2027,14 +2027,14 @@
 					type_result: false,
 					fn: function( x, y, session ) { return y ? x - parseInt( x / y ) * y : pl.error.evaluation( "zero_division", session.__call_indicator ); }
 				}
-				
+
 			}
-			
+
 		},
-		
+
 		// Directives
 		directive: {
-			
+
 			// dynamic/1
 			"dynamic/1": function( session, atom ) {
 				var indicator = atom.args[0];
@@ -2052,7 +2052,7 @@
 					session.public.push( atom.args[0].args[0].id + "/" + atom.args[0].args[1].value );
 				}
 			},
-			
+
 			// use_module/1
 			"use_module/1": function( session, atom ) {
 				var module = atom.args[0];
@@ -2077,7 +2077,7 @@
 					}
 				}
 			},
-			
+
 			// char_conversion/2
 			"char_conversion/2": function( session, atom ) {
 				var inchar = atom.args[0], outchar = atom.args[1];
@@ -2095,7 +2095,7 @@
 					}
 				}
 			},
-			
+
 			// op/3
 			"op/3": function( session, atom ) {
 				var priority = atom.args[0], type = atom.args[1], operator = atom.args[2];
@@ -2152,22 +2152,22 @@
 					}
 				}
 			}
-			
+
 		},
-		
+
 		// Built-in predicates
 		predicate: {
-			
+
 			// TAU PROLOG
-			
+
 			// $tau:level/1
 			"$tau:level/1": function( session, point, atom ) {
 				session.level = atom.args[0].id;
 				session.success( point, point.parent );
 			},
-		
+
 			// LOGIC AND CONTROL STRUCTURES
-		
+
 			// ;/2 (disjunction)
 			";/2": function( session, point, atom ) {
 				if( pl.type.is_term( atom.args[0] ) && atom.args[0].indicator === "->/2" ) {
@@ -2193,7 +2193,7 @@
 					session.prepend( [left, right] );
 				}
 			},
-			
+
 			// !/0 (cut)
 			"!/0": function( session, point, atom ) {
 				var parent_cut, states = [];
@@ -2211,7 +2211,7 @@
 				}
 				session.points = [new State( point.goal.replace( null ), point.substitution, point )].concat( states );
 			},
-			
+
 			// \+ (negation)
 			"\\+/1": function( session, point, atom ) {
 				var goal = atom.args[0];
@@ -2237,21 +2237,21 @@
 					session.__calls.unshift( callback );
 				}
 			},
-			
+
 			// ->/2 (implication)
 			"->/2": function( session, point, atom ) {
 				var goal = point.goal.replace( new Term( ",", [atom.args[0], new Term( ",", [new Term( "!" ), atom.args[1]] )] ) );
 				session.prepend( [new State( goal, point.substitution, point.parent )] );
 			},
-			
+
 			// fail/0
 			"fail/0": function( _1, _2, _3 ) {},
-			
+
 			// true/0
 			"true/0": function( session, point, _ ) {
 				session.success( point );
 			},
-			
+
 			// call/1
 			"call/1": function( session, point, atom ) {
 				var goal = atom.args[0];
@@ -2263,7 +2263,7 @@
 					session.prepend( [new State( point.goal.replace( goal ), point.substitution, point )] );
 				}
 			},
-			
+
 			// once/1
 			"once/1": function( session, point, atom ) {
 				var goal = atom.args[0];
@@ -2283,14 +2283,14 @@
 					session.copy_context( session2 );
 				}
 			},
-			
+
 			// repeat/0
 			"repeat/0": function( session, point, _ ) {
 				session.prepend( [new State( point.goal.replace( null ), point.substitution, point ), point] );
 			},
-			
+
 			// EXCEPTIONS
-			
+
 			// throw/1
 			"throw/1": function( session, point, atom ) {
 				if( pl.type.is_variable( atom.args[0] ) ) {
@@ -2299,7 +2299,7 @@
 					session.throwError( atom.args[0] );
 				}
 			},
-			
+
 			// catch/3
 			"catch/3": function( session, point, atom ) {
 				var points = session.points;
@@ -2354,9 +2354,9 @@
 				};
 				session.__calls.unshift( callback );
 			},
-			
+
 			// UNIFICATION
-			
+
 			// =/2 (unification)
 			"=/2": function( session, point, atom ) {
 				var state = pl.unify( atom.args[0], atom.args[1], false );
@@ -2367,7 +2367,7 @@
 					session.prepend( [state] );
 				}
 			},
-			
+
 			// unify_with_occurs_check/2
 			"unify_with_occurs_check/2": function( session, point, atom ) {
 				var state = pl.unify( atom.args[0], atom.args[1], true );
@@ -2378,7 +2378,7 @@
 					session.prepend( [state] );
 				}
 			},
-			
+
 			// \=/2
 			"\\=/2": function( session, point, atom ) {
 				var state = pl.unify( atom.args[0], atom.args[1] );
@@ -2387,9 +2387,9 @@
 					session.success( point );
 				}
 			},
-			
+
 			// ALL SOLUTIONS
-			
+
 			// findall/3
 			"findall/3": function( session, point, atom ) {
 				var template = atom.args[0], goal = atom.args[1], instances = atom.args[2];
@@ -2428,7 +2428,7 @@
 					session.__calls.unshift( callback );
 				}
 			},
-			
+
 			// bagof/3
 			"bagof/3": function( session, point, atom ) {
 				var answer, template = atom.args[0], goal = atom.args[1], instances = atom.args[2];
@@ -2504,7 +2504,7 @@
 					session.__calls.unshift( callback );
 				}
 			},
-	
+
 			// setof/3
 			"setof/3": function( session, point, atom ) {
 				var answer, template = atom.args[0], goal = atom.args[1], instances = atom.args[2];
@@ -2580,9 +2580,9 @@
 					session.__calls.unshift( callback );
 				}
 			},
-			
+
 			// TERM CREATION AND DECOMPOSITION
-			
+
 			// functor/3
 			"functor/3": function( session, point, atom ) {
 				var subs;
@@ -2610,7 +2610,7 @@
 					session.prepend( [new State( point.goal.replace( goal ), point.substitution, point.parent )] );
 				}
 			},
-			
+
 			// arg/3
 			"arg/3": function( session, point, atom ) {
 				if( pl.type.is_variable( atom.args[0] ) || pl.type.is_variable( atom.args[1] ) ) {
@@ -2627,7 +2627,7 @@
 					}
 				}
 			},
-			
+
 			// =../2 (univ)
 			"=../2": function( session, point, atom ) {
 				var list;
@@ -2669,15 +2669,15 @@
 					}
 				}
 			},
-			
+
 			// copy_term/2
 			"copy_term/2": function( session, point, atom ) {
 				var renamed = atom.args[0].rename( session );
 				session.prepend( [new State( point.goal.replace( new Term( "=", [renamed, atom.args[1]] ) ), point.substitution, point.parent )] );
 			},
-			
+
 			// CLAUSE RETRIEVAL AND INFORMATION
-			
+
 			// clause/2
 			"clause/2": function( session, point, atom ) {
 				if( pl.type.is_variable( atom.args[0] ) ) {
@@ -2706,7 +2706,7 @@
 					}
 				}
 			},
-			
+
 			// current_predicate/1
 			"current_predicate/1": function( session, point, atom ) {
 				var indicator = atom.args[0];
@@ -2730,9 +2730,9 @@
 					session.prepend( states );
 				}
 			},
-			
+
 			// CLAUSE CREATION AND DESTRUCTION
-			
+
 			// asserta/1
 			"asserta/1": function( session, point, atom ) {
 				if( pl.type.is_variable( atom.args[0] ) ) {
@@ -2763,7 +2763,7 @@
 					}
 				}
 			},
-			
+
 			// assertz/1
 			"assertz/1": function( session, point, atom ) {
 				if( pl.type.is_variable( atom.args[0] ) ) {
@@ -2794,7 +2794,7 @@
 					}
 				}
 			},
-			
+
 			// retract/1
 			"retract/1": function( session, point, atom ) {
 				if( pl.type.is_variable( atom.args[0] ) ) {
@@ -2837,8 +2837,8 @@
 					}
 				}
 			},
-			
-			
+
+
 			// abolish/1
 			"abolish/1": function( session, point, atom ) {
 				if( pl.type.is_variable( atom.args[0] ) || pl.type.is_term( atom.args[0] ) && atom.args[0].indicator === "//2"
@@ -2864,9 +2864,9 @@
 					}
 				}
 			},
-			
+
 			// ATOM PROCESSING
-			
+
 			// atom_length/2
 			"atom_length/2": function( session, point, atom ) {
 				if( pl.type.is_variable( atom.args[0] ) ) {
@@ -2882,7 +2882,7 @@
 					session.prepend( [new State( point.goal.replace( new Term( "=", [length, atom.args[1]] ) ), point.substitution, point )] );
 				}
 			},
-			
+
 			// atom_concat/3
 			"atom_concat/3": function( session, point, atom ) {
 				var str, goal, start = atom.args[0], end = atom.args[1], whole = atom.args[2];
@@ -2925,7 +2925,7 @@
 					}
 				}
 			},
-			
+
 			// sub_atom/5
 			"sub_atom/5": function( session, point, atom ) {
 				var i, atom1 = atom.args[0], before = atom.args[1], length = atom.args[2], after = atom.args[3], subatom = atom.args[4];
@@ -2992,7 +2992,7 @@
 					session.prepend( states );
 				}
 			},
-			
+
 			// atom_chars/2
 			"atom_chars/2": function( session, point, atom ) {
 				var atom1 = atom.args[0], list = atom.args[1];
@@ -3007,7 +3007,7 @@
 							list1 = new Term( ".", [new Term( atom1.id.charAt( i ) ), list1] );
 						}
 						session.prepend( [new State( point.goal.replace( new Term( "=", [list, list1] ) ), point.substitution, point )] );
-					} else {			
+					} else {
 						var pointer = list;
 						var v = pl.type.is_variable( atom1 );
 						var str = "";
@@ -3035,7 +3035,7 @@
 					}
 				}
 			},
-			
+
 			// atom_codes/2
 			"atom_codes/2": function( session, point, atom ) {
 				var atom1 = atom.args[0], list = atom.args[1];
@@ -3050,7 +3050,7 @@
 							list1 = new Term( ".", [new Num( atom1.id.charCodeAt( i ), false ), list1] );
 						}
 						session.prepend( [new State( point.goal.replace( new Term( "=", [list, list1] ) ), point.substitution, point )] );
-					} else {			
+					} else {
 						var pointer = list;
 						var v = pl.type.is_variable( atom1 );
 						var str = "";
@@ -3078,7 +3078,7 @@
 					}
 				}
 			},
-			
+
 			// char_code/2
 			"char_code/2": function( session, point, atom ) {
 				var char = atom.args[0], code = atom.args[1];
@@ -3100,7 +3100,7 @@
 					}
 				}
 			},
-			
+
 			// number_chars/2
 			"number_chars/2": function( session, point, atom ) {
 				var str, num = atom.args[0], list = atom.args[1];
@@ -3109,7 +3109,7 @@
 				} else if( !pl.type.is_variable( num ) && !pl.type.is_number( num ) ) {
 					session.throwError( pl.error.type( "number", num, atom.indicator ) );
 				} else {
-					if( !pl.type.is_variable( list ) ) {	
+					if( !pl.type.is_variable( list ) ) {
 						var pointer = list;
 						var v = pl.type.is_variable( num );
 						str = "";
@@ -3157,7 +3157,7 @@
 					}
 				}
 			},
-			
+
 			// number_codes/2
 			"number_codes/2": function( session, point, atom ) {
 				var str, num = atom.args[0], list = atom.args[1];
@@ -3166,7 +3166,7 @@
 				} else if( !pl.type.is_variable( num ) && !pl.type.is_number( num ) ) {
 					session.throwError( pl.error.type( "number", num, atom.indicator ) );
 				} else {
-					if( !pl.type.is_variable( list ) ) {	
+					if( !pl.type.is_variable( list ) ) {
 						var pointer = list;
 						var v = pl.type.is_variable( num );
 						str = "";
@@ -3213,47 +3213,47 @@
 					}
 				}
 			},
-			
+
 			// TERM COMPARISON
-			
+
 			"@=</2": function( session, point, atom ) {
 				if( pl.compare( atom.args[0], atom.args[1] ) <= 0 ) {
 					session.success( point );
 				}
 			},
-			
+
 			"==/2": function( session, point, atom ) {
 				if( pl.compare( atom.args[0], atom.args[1] ) === 0 ) {
 					session.success( point );
 				}
 			},
-			
+
 			"\\==/2": function( session, point, atom ) {
 				if( pl.compare( atom.args[0], atom.args[1] ) !== 0 ) {
 					session.success( point );
 				}
 			},
-			
+
 			"@</2": function( session, point, atom ) {
 				if( pl.compare( atom.args[0], atom.args[1] ) < 0 ) {
 					session.success( point );
 				}
 			},
-			
+
 			"@>/2": function( session, point, atom ) {
 				if( pl.compare( atom.args[0], atom.args[1] ) > 0 ) {
 					session.success( point );
 				}
 			},
-			
+
 			"@>=/2": function( session, point, atom ) {
 				if( pl.compare( atom.args[0], atom.args[1] ) >= 0 ) {
 					session.success( point );
 				}
 			},
-			
+
 			// EVALUATION
-			
+
 			// is/2
 			"is/2": function( session, point, atom ) {
 				var op = atom.args[1].interpret( session );
@@ -3263,7 +3263,7 @@
 					session.prepend( [new State( point.goal.replace( new Term( "=", [atom.args[0], op], session.level ) ), point.substitution, point )] );
 				}
 			},
-			
+
 			// =:=/2
 			"=:=/2": function( session, point, atom ) {
 				var cmp = pl.arithmetic_compare( session, atom.args[0], atom.args[1] );
@@ -3273,7 +3273,7 @@
 					session.success( point );
 				}
 			},
-			
+
 			// =\=/2
 			"=\\=/2": function( session, point, atom ) {
 				var cmp = pl.arithmetic_compare( session, atom.args[0], atom.args[1] );
@@ -3283,7 +3283,7 @@
 					session.success( point );
 				}
 			},
-			
+
 			// </2
 			"</2": function( session, point, atom ) {
 				var cmp = pl.arithmetic_compare( session, atom.args[0], atom.args[1] );
@@ -3293,7 +3293,7 @@
 					session.success( point );
 				}
 			},
-			
+
 			// =</2
 			"=</2": function( session, point, atom ) {
 				var cmp = pl.arithmetic_compare( session, atom.args[0], atom.args[1] );
@@ -3303,7 +3303,7 @@
 					session.success( point );
 				}
 			},
-			
+
 			// >/2
 			">/2": function( session, point, atom ) {
 				var cmp = pl.arithmetic_compare( session, atom.args[0], atom.args[1] );
@@ -3313,7 +3313,7 @@
 					session.success( point );
 				}
 			},
-			
+
 			// >=/2
 			">=/2": function( session, point, atom ) {
 				var cmp = pl.arithmetic_compare( session, atom.args[0], atom.args[1] );
@@ -3323,72 +3323,72 @@
 					session.success( point );
 				}
 			},
-			
+
 			// TYPE TEST
-			
+
 			// var/1
 			"var/1": function( session, point, atom ) {
 				if( pl.type.is_variable( atom.args[0] ) ) {
 					session.success( point );
 				}
 			},
-			
+
 			// atom/1
 			"atom/1": function( session, point, atom ) {
 				if( pl.type.is_atom( atom.args[0] ) ) {
 					session.success( point );
 				}
 			},
-			
+
 			// atomic/1
 			"atomic/1": function( session, point, atom ) {
 				if( pl.type.is_atomic( atom.args[0] ) ) {
 					session.success( point );
 				}
 			},
-			
+
 			// compound/1
 			"compound/1": function( session, point, atom ) {
 				if( pl.type.is_compound( atom.args[0] ) ) {
 					session.success( point );
 				}
 			},
-			
+
 			// integer/1
 			"integer/1": function( session, point, atom ) {
 				if( pl.type.is_integer( atom.args[0] ) ) {
 					session.success( point );
 				}
 			},
-			
+
 			// float/1
 			"float/1": function( session, point, atom ) {
 				if( pl.type.is_float( atom.args[0] ) ) {
 					session.success( point );
 				}
 			},
-			
+
 			// number/1
 			"number/1": function( session, point, atom ) {
 				if( pl.type.is_number( atom.args[0] ) ) {
 					session.success( point );
 				}
 			},
-			
+
 			// nonvar/1
 			"nonvar/1": function( session, point, atom ) {
 				if( !pl.type.is_variable( atom.args[0] ) ) {
 					session.success( point );
 				}
 			},
-			
+
 			// IMPLEMENTATION DEFINED HOOKS
-			
+
 			// halt/0
 			"halt/0": function( session, point, _ ) {
 				session.points = [];
 			},
-			
+
 			// halt/1
 			"halt/1": function( session, point, atom ) {
 				var int = atom.args[0];
@@ -3400,7 +3400,7 @@
 					session.points = [];
 				}
 			},
-			
+
 			// current_prolog_flag/2
 			"current_prolog_flag/2": function( session, point, atom ) {
 				var flag = atom.args[0], value = atom.args[1];
@@ -3418,7 +3418,7 @@
 					session.prepend( states );
 				}
 			},
-			
+
 			// set_prolog_flag/2
 			"set_prolog_flag/2": function( session, point, atom ) {
 				var flag = atom.args[0], value = atom.args[1];
@@ -3437,77 +3437,77 @@
 					session.success( point );
 				}
 			}
-			
+
 		},
-		
+
 		// Flags
 		flag: {
-			
+
 			// Bounded numbers
 			bounded: {
 				allowed: [new Term( "true" ), new Term( "false" )],
 				value: new Term( "true" ),
 				changeable: false
 			},
-			
+
 			// Maximum integer
 			max_integer: {
 				allowed: [new Num( Number.MAX_SAFE_INTEGER )],
 				value: new Num( Number.MAX_SAFE_INTEGER ),
 				changeable: false
 			},
-			
+
 			// Minimum integer
 			min_integer: {
 				allowed: [new Num( Number.MIN_SAFE_INTEGER )],
 				value: new Num( Number.MIN_SAFE_INTEGER ),
 				changeable: false
 			},
-			
+
 			// Rounding function
 			integer_rounding_function: {
 				allowed: [new Term( "down" ), new Term( "toward_zero" )],
 				value: new Term( "toward_zero" ),
 				changeable: false
 			},
-			
+
 			// Character conversion
 			char_conversion : {
 				allowed: [new Term( "on" ), new Term( "off" )],
 				value: new Term( "on" ),
 				changeable: true
 			},
-			
+
 			// Debugger
 			debug: {
 				allowed: [new Term( "on" ), new Term( "off" )],
 				value: new Term( "off" ),
 				changeable: true
 			},
-			
+
 			// Maximum arity of predicates
 			max_arity: {
 				allowed: [new Term( "unbounded" )],
 				value: new Term( "unbounded" ),
 				changeable: false
 			},
-			
+
 			// Unkwnow predicates behavior
 			unknown: {
 				allowed: [new Term( "error" ), new Term( "fail" ), new Term( "warning" )],
 				value: new Term( "error" ),
 				changeable: true
 			},
-			
+
 			// Double quotes behavior
 			double_quotes: {
 				allowed: [new Term( "chars" ), new Term( "codes" ), new Term( "atom" )],
 				value: new Term( "codes" ),
 				changeable: true
 			}
-			
+
 		},
-		
+
 		// Unify
 		unify: function( obj1, obj2, occurs_check ) {
 			occurs_check = occurs_check === undefined ? false : occurs_check;
@@ -3526,13 +3526,13 @@
 				return obj1.unify( obj2, occurs_check );
 			}
 		},
-		
+
 		// Compare
 		compare: function( obj1, obj2 ) {
 			var type = pl.type.compare( obj1, obj2 );
 			return type !== 0 ? type : obj1.compare( obj2 );
 		},
-		
+
 		// Arithmetic comparison
 		arithmetic_compare: function( session, obj1, obj2 ) {
 			var expr1 = obj1.interpret( session );
@@ -3547,7 +3547,7 @@
 				}
 			}
 		},
-		
+
 		// Operate
 		operate: function( session, obj ) {
 			if( pl.type.is_operator( obj ) ) {
@@ -3581,45 +3581,45 @@
 				return pl.error.type( "evaluable", obj.indicator, session.__call_indicator );
 			}
 		},
-		
+
 		// Errors
 		error: {
-			
+
 			// Existence error
 			existence: function( type, object, indicator ) {
 				return new Term( "error", [new Term( "existence_error", [new Term( type ), new Term( object )] ), new Term( indicator )] );
 			},
-			
+
 			// Type error
 			type: function( expected, found, indicator ) {
 				return new Term( "error", [new Term( "type_error", [new Term( expected ), found] ), new Term( indicator )] );
 			},
-			
+
 			// Instantation error
 			instantiation: function( indicator ) {
 				return new Term( "error", [new Term( "instantiation_error" ), new Term( indicator )] );
 			},
-			
+
 			// Domain error
 			domain: function( expected, found, indicator ) {
 				return new Term( "error", [new Term( "domain_error", [new Term( expected ), found]), new Term( indicator )] );
 			},
-			
+
 			// Representation error
 			representation: function( flag, indicator ) {
 				return new Term( "error", [new Term( "representation_error", [new Term( flag )] ), new Term( indicator )] );
 			},
-			
+
 			// Permission error
 			permission: function( operation, type, found, indicator ) {
 				return new Term( "error", [new Term( "permission_error", [new Term( operation ), new Term( type ), found] ), new Term( indicator )] );
 			},
-			
+
 			// Evaluation error
 			evaluation: function( error, indicator ) {
 				return new Term( "error", [new Term( "evaluation_error", [new Term( error )] ), new Term( indicator )] );
 			},
-			
+
 			// Syntax error
 			syntax: function( token, expected, last ) {
 				var position = last && token.matches.length > 0 ? token.start + token.matches[0].length : token.start;
@@ -3627,19 +3627,19 @@
 				var info = new Term( ".", [new Term( "line", [new Num(token.line+1)] ), new Term( ".", [new Term( "column", [new Num(position+1)] ), new Term( ".", [found, new Term( "[]", [] )] )] )] );
 				return new Term( "error", [new Term( "syntax_error", [new Term( expected )] ), info] );
 			},
-			
+
 			// Syntax error by predicate
 			syntax_by_predicate: function( expected, found, indicator ) {
 				return new Term( "error", [new Term( "syntax_error", [new Term( expected ), found ] ), new Term( indicator )] );
 			}
-			
+
 		},
-		
+
 		// Format of renamed variables
 		format_variable: function( variable ) {
 			return "_" + variable;
 		},
-		
+
 		// Format of computed answers
 		format_answer: function( answer, session ) {
 			if( pl.type.is_error( answer ) ) {
@@ -3659,7 +3659,7 @@
 					}
 					str += link.toString() + " = " + answer.links[link].toString();
 				}
-				var delimiter = typeof session === "undefined" || session.points.length > 0 ? " ;" : "."; 
+				var delimiter = typeof session === "undefined" || session.points.length > 0 ? " ;" : ".";
 				if( i === 0 ) {
 					return "true" + delimiter;
 				} else {
@@ -3667,7 +3667,7 @@
 				}
 			}
 		},
-		
+
 		// Flatten default errors
 		flatten_error: function( error ) {
 			if( !pl.type.is_error( error ) ) return null;
@@ -3712,12 +3712,12 @@
 			}
 			return obj;
 		},
-		
+
 		// Create new session
 		create: function( limit ) {
 			return new pl.type.Session( limit );
 		}
-		
+
 	};
 
 	if( typeof module !== 'undefined' ) {
@@ -3725,5 +3725,5 @@
 	} else {
 		window.pl = pl;
 	}
-	
+
 })();

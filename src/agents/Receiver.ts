@@ -39,10 +39,10 @@ export default class Receiver {
             this.mind + ", " +
             strategy + // Strategy
             ").";
+        console.log(`Receiver query: ${query}`);
         let answers = prolog.execute(this.agentType, query);
 
         const answer: string = answers[0];
-        console.log(`Receiver query: ${query}`);
         console.log(`Receiver answer: ${answer}`);
         return stringToLocation(answer);
     }
