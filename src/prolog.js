@@ -9,6 +9,7 @@ try {
 catch (ex) {
     // console.warn('Unable to load prolog directly. Most likely running in NodeJs');
     var receiver = 'src/prolog/combinedAgents.pl';
+    // receiver = 'src/prolog/path.pl';
     var sender = 'src/prolog/combinedAgents.pl';
     isNode = true;
     // To read files
@@ -21,12 +22,24 @@ var pl = require("./lib/core.js");
 require("./lib/lists.js")(pl);
 require("./lib/random.js")(pl);
 
-exports.execute = function execute(agent, query) {
-    let session = pl.create(1000000000000);
+let program = readFile('receiver');
+let session = pl.create(1000000);
+session.consult(program);
 
+if (process.argv[2]) {
+    let query = process.argv[2];
+    session.query(query);
+    console.time('querying');
+    session.answers(x => console.log(pl.format_answer(x)));
+    console.timeEnd('querying');
+}
+
+exports.execute = function execute(agent, query) {
     // Load the program
-    let program = readFile(agent);
-    session.consult(program);
+    if (!program) {
+        program = readFile(agent);
+        session.consult(program);
+    }
 
     // Query the goal
     session.query(query);

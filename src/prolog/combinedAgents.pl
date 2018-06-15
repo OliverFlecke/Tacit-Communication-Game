@@ -1,10 +1,6 @@
 :- use_module(library(lists)).
 :- use_module(library(random)).
 
-% Utils
-myCall(move, A, B, C) :- move(A, B, C).
-myCall(hueristic_move, A, B, C) :- hueristic_move(A, B, C).
-
 /* Strategy:
     0 - Short
     1 - Short + Goal
@@ -14,28 +10,26 @@ myCall(hueristic_move, A, B, C) :- hueristic_move(A, B, C).
 */
 
 %Auxillary Function
-aux_subtract([], _, []) :- !.
-aux_subtract([A|C], B, D) :-
+setSubtract([], _, []) :- !.
+setSubtract([A|C], B, D) :-
         member(A, B), !,
-        aux_subtract(C, B, D).
-aux_subtract([A|B], C, [A|D]) :-
-        aux_subtract(B, C, D).
+        setSubtract(C, B, D).
+setSubtract([A|B], C, [A|D]) :-
+        setSubtract(B, C, D).
 
-aux_matchMap(_,[],[]).
+% aux_matchMap(_,[],[]).
 
-aux_matchMap(Path, Map, Output) :-
-    append(_, [X], Path),
-    append(W, [{Q,_}], Map),
-    \+ append(_, [X], Q),
-    aux_matchMap(Path, W, Output).
+% aux_matchMap(Path, Map, Output) :-
+%     append(_, [X], Path),
+%     append(W, [{Q,_}], Map),
+%     \+ append(_, [X], Q),
+%     aux_matchMap(Path, W, Output).
 
-aux_matchMap(Path, Map, [Y|Z]) :-
-    append(_, [X], Path),
-    append(W, [{Q,Y}], Map),
-    append(_, [X], Q),
-    aux_matchMap(Path, W, Z).
-
-
+% aux_matchMap(Path, Map, [Y|Z]) :-
+%     append(_, [X], Path),
+%     append(W, [{Q,Y}], Map),
+%     append(_, [X], Q),
+%     aux_matchMap(Path, W, Z).
 
 %Receiver
 %Params: Path, Errors, Map, Result, Order, Strategy
@@ -58,24 +52,25 @@ getPossibleReceiverMoves(Path, _, Map, [X|[]], 0, _) :-
 
 %Zero Order, Shortest Goal Path(1)
 getPossibleReceiverMoves(Path, Errors, _, ReceiverGoal, 0, 1) :-
-    aux_subtract(Path, Errors, ReceiverGoal).
+    setSubtract(Path, Errors, ReceiverGoal).
 
 %Zero Order, Shortest Path(0)
 getPossibleReceiverMoves(_, Errors, _, ReceiverGoal, 0, 0) :-
-    aux_subtract([(1,1), (2,1), (3,1), (1,2), (2,2), (3,2), (1,3), (2,3), (3,3)], Errors, ReceiverGoal).
+    setSubtract([(1,1), (2,1), (3,1), (1,2), (2,2), (3,2), (1,3), (2,3), (3,3)], Errors, ReceiverGoal).
 
 %First Order, Shortest Path(0),
 getPossibleReceiverMoves([H|T], Errors, Map, ReceiverGoal, Order, Strategy) :-
+    Order > 0,
     append(_, [SenderGoal], [H|T]),
     Temp is Order -1,
-    findall(X, (isLegalMove(X), getSenderMove(H, X, SenderGoal, [H|T], Temp, Strategy, Map)), RGL),
-    aux_subtract(RGL, Errors, ReceiverGoal).
+    findall(X, (move(H, X, _), getSenderMove(H, X, SenderGoal, [H|T], Temp, Strategy, Map)), RGL),
+    setSubtract([H|RGL], Errors, ReceiverGoal).
 
 /* %First Order, Shortest Goal Path(1),
 getPossibleReceiverMoves([H|T], Errors, Map, ReceiverGoal, 1, 1) :-
     append(_, [SenderGoal], [H|T]),
     findall(X, (isLegalMove(X), getSenderMove(H, X, SenderGoal, [H|T], 0, 1, Map)), RGL),
-    aux_subtract(RGL, Errors, ReceiverGoal),
+    setSubtract(RGL, Errors, ReceiverGoal),
     length(ReceiverGoal, L),
     L>0.
 
@@ -83,7 +78,7 @@ getPossibleReceiverMoves([H|T], Errors, Map, ReceiverGoal, 1, 1) :-
 getPossibleReceiverMoves([H|T], Errors, Map, ReceiverGoal, 2, 0) :-
     append(_, [SenderGoal], [H|T]),
     findall(X, (isLegalMove(X), getSenderMove(H, X, SenderGoal, [H|T], 1, 0, Map)), RGL),
-    aux_subtract(RGL, Errors, ReceiverGoal),
+    setSubtract(RGL, Errors, ReceiverGoal),
     length(ReceiverGoal, L),
     L>0.
 
@@ -91,7 +86,7 @@ getPossibleReceiverMoves([H|T], Errors, Map, ReceiverGoal, 2, 0) :-
 getPossibleReceiverMoves([H|T], Errors, Map, ReceiverGoal, 2, 1) :-
     append(_, [SenderGoal], [H|T]),
     findall(X, (isLegalMove(X), getSenderMove(H, X, SenderGoal, [H|T], 1, 1, Map)), RGL),
-    aux_subtract(RGL, Errors, ReceiverGoal),
+    setSubtract(RGL, Errors, ReceiverGoal),
     length(ReceiverGoal, L),
     L>0. */
 
@@ -110,55 +105,54 @@ getSenderMove(C, ReceiverGoal, SenderGoal, Path, Order, Strategy, Map) :-
 getSenderMove(CurrentLocation, ReceiverGoal, SenderGoal, Path, _, 1, _):-
     % member({Path, RGX}, Map),
     % RGX \== ReceiverGoal,
-    aux_getPath(CurrentLocation, ReceiverGoal, StartToReceiverPath, hueristic_move),
-    aux_getPath(ReceiverGoal, ReceiverGoal, ReceiverToReceiverPath, move),
+    generatePath(CurrentLocation, ReceiverGoal, StartToReceiverPath, hueristic_move),
+    generatePath(ReceiverGoal, ReceiverGoal, ReceiverToReceiverPath, move),
     length(ReceiverToReceiverPath, L),
     L>1,
     combinePath(StartToReceiverPath, ReceiverToReceiverPath, StartToReceiverTwicePath),
-    aux_getPath(ReceiverGoal, SenderGoal, ReceiverToSenderPath, hueristic_move),
+    generatePath(ReceiverGoal, SenderGoal, ReceiverToSenderPath, hueristic_move),
     combinePath(StartToReceiverTwicePath, ReceiverToSenderPath, Path).
 
 
 % Zero Order, Shortest Path(0),
 getPath(CurrentLocation, _, SenderGoal, Path, 0, 0,_):-
-    aux_getPath(CurrentLocation, SenderGoal, Path, hueristic_move).
+    generatePath(CurrentLocation, SenderGoal, Path, hueristic_move).
 
 %Zero Order, Shortest Goal Path(1),
 getPath(CurrentLocation, ReceiverGoal, SenderGoal, Path, 0, 1, _) :-
-    aux_getPath(CurrentLocation, ReceiverGoal, P1, hueristic_move),
-    aux_getPath(ReceiverGoal, SenderGoal, P2, hueristic_move),
+    generatePath(CurrentLocation, ReceiverGoal, P1, hueristic_move),
+    generatePath(ReceiverGoal, SenderGoal, P2, hueristic_move),
     combinePath(P1, P2, Path).
 
 % 1st Order, Shortest Path(0),
 getPath(CurrentLocation, ReceiverGoal, SenderGoal, Path, 1, 0, Map) :-
-    aux_getPath(CurrentLocation, SenderGoal, Path, hueristic_move),
+    generatePath(CurrentLocation, SenderGoal, Path, hueristic_move),
     getPossibleReceiverMoves(Path, [], Map, RGL, 0, 0),
     member(ReceiverGoal, RGL).
 
 
 % 1st Order, Shortest Goal Path(1)
 getPath(CurrentLocation, SenderGoal, SenderGoal, Path, 1, 1, _) :-
-    aux_getPath(CurrentLocation, SenderGoal, Path, hueristic_move).
+    generatePath(CurrentLocation, SenderGoal, Path, hueristic_move).
 getPath(CurrentLocation, ReceiverGoal, SenderGoal, Path, 1, 1, Map) :-
-    aux_getPath(CurrentLocation, ReceiverGoal, P1 , hueristic_move),
-    aux_getPath(ReceiverGoal, SenderGoal, P2 , hueristic_move),
+    generatePath(CurrentLocation, ReceiverGoal, P1 , hueristic_move),
+    generatePath(ReceiverGoal, SenderGoal, P2 , hueristic_move),
     combinePath(P1, P2, Path),
     getPossibleReceiverMoves(Path, [], Map, RGL, 0, 1),
     member(ReceiverGoal, RGL).
 
-
 % 2nd Order, Shortest Path(0),
 getPath(CurrentLocation, ReceiverGoal, SenderGoal, Path, 2, 0, Map) :-
-    aux_getPath(CurrentLocation, SenderGoal, Path, hueristic_move),
+    generatePath(CurrentLocation, SenderGoal, Path, hueristic_move),
     getPossibleReceiverMoves(Path, [], Map, RGL, 1, 0),
     member(ReceiverGoal, RGL).
 
 % 2nd Order, Shortest Goal Path(1),
 getPath(CurrentLocation, SenderGoal, SenderGoal, Path, 2, 1, _) :-
-    aux_getPath(CurrentLocation, SenderGoal, Path, hueristic_move).
+    generatePath(CurrentLocation, SenderGoal, Path, hueristic_move).
 getPath(CurrentLocation, ReceiverGoal, SenderGoal, Path, 2, 1, Map) :-
-    aux_getPath(CurrentLocation, ReceiverGoal, P1, hueristic_move),
-    aux_getPath(ReceiverGoal, SenderGoal, P2, hueristic_move),
+    generatePath(CurrentLocation, ReceiverGoal, P1, hueristic_move),
+    generatePath(ReceiverGoal, SenderGoal, P2, hueristic_move),
     combinePath(P1, P2, Path),
     getPossibleReceiverMoves(Path, [], Map, RGL, 1, 1),
     member(ReceiverGoal, RGL).
@@ -171,36 +165,34 @@ combinePath(X, [H|Y], Path) :-
     append(X, Y, Path), !.
 combinePath(X, Y, Path) :- append(X, Y, Path).
 
-aux_getPath(X, X, [X], _).
-aux_getPath(X, Y, [X|Path], MoveFunction) :-
-    (var(Path) -> L is 0 ; length(Path, L)),
-    aux_getPathHelper(X, Y, Path, MoveFunction, L).
-
-
+% Check the length is not too long
 check_length([_], _).
 check_length([_, _], _).
 check_length([_, _, _], _).
 check_length([_, _, _, _], MoveFunction) :- MoveFunction \== move.
 check_length([_, _, _, _, _], MoveFunction) :- MoveFunction \== move.
 
-aux_getPathHelper(_, _, _, _, 10) :- !, fail.
-aux_getPathHelper(X, X, [], hueristic_move, _) :- !.
-aux_getPathHelper(X, X, [], _, _).
-aux_getPathHelper(X, X, [H|T], MoveFunction, L) :-
+generatePath(X, X, [X], _).
+generatePath(X, Y, [X|Path], MoveFunction) :-
+    (var(Path) -> L is 0 ; length(Path, L)),
+    generatePathHelper(X, Y, Path, MoveFunction, L).
+
+generatePathHelper(_, _, _, _, 10) :- !, fail.
+generatePathHelper(X, X, [], hueristic_move, _) :- !.
+generatePathHelper(X, X, [], _, _).
+generatePathHelper(X, X, [H|T], MoveFunction, L) :-
     check_length([H|T], MoveFunction),
     findall(J, move(X, J, X), ResultList),
     member(H, ResultList),
-    aux_getPathHelper(H, X, T, MoveFunction, L + 1).
-aux_getPathHelper(X, Y, [H|T], MoveFunction, L) :-
+    generatePathHelper(H, X, T, MoveFunction, L + 1).
+generatePathHelper(X, Y, [H|T], MoveFunction, L) :-
     check_length([H|T], MoveFunction),
     findall(J, myCall(MoveFunction, X, J, Y), ResultList),
     member(H, ResultList),
-    aux_getPathHelper(H, Y, T, MoveFunction, L + 1).
+    generatePathHelper(H, Y, T, MoveFunction, L + 1).
 
 
-abs(X, Y) :-
-    X < 0,
-    Y is -X, !.
+abs(X, Y) :- X < 0, Y is -X, !.
 abs(X, X).
 
 % manhattan_dist((CLX, CLY), (GX, GY), D) :-
@@ -213,36 +205,34 @@ abs(X, X).
 
 manhattan_dist((CLX, CLY), (GX, GY), D) :-
     abs(GX - CLX, X),
-    abs(CLY - GY, Y),
+    abs(GY - CLY, Y),
     D is X + Y.
 
 hueristic_move(C, N, G) :-
     manhattan_dist(C, G, D),
-    move(C, N,_),
+    move(C, N, _),
     manhattan_dist(N, G, DN),
     D =:= DN + 1.
 
 %Params: currentLocation, newLocation
-move((CLX, CLY), (NLX, NLY), _) :-
-    NLY is CLY,
+move((CLX, CLY), (NLX, CLY), _) :-
     NLX is CLX + 1,
-    isLegalMove((NLX, NLY)).
+    isLegalMove((NLX, CLY)).
 
-move((CLX, CLY), (NLX, NLY), _) :-
-    NLY is CLY,
+move((CLX, CLY), (NLX, CLY), _) :-
     NLX is CLX - 1,
-    isLegalMove((NLX, NLY)).
+    isLegalMove((NLX, CLY)).
 
-move((CLX, CLY), (NLX, NLY),_) :-
-    NLX is CLX,
+move((CLX, CLY), (CLX, NLY),_) :-
     NLY is CLY + 1,
-    isLegalMove((NLX, NLY)).
+    isLegalMove((CLX, NLY)).
 
-move((CLX, CLY), (NLX, NLY),_) :-
-    NLX is CLX,
+move((CLX, CLY), (CLY, NLY),_) :-
     NLY is CLY - 1,
-    isLegalMove((NLX, NLY)).
+    isLegalMove((CLX, NLY)).
 
-isLegalMove(Point) :-
-    member(Point,[(1,1), (2,1), (3,1), (1,2), (2,2), (3,2), (1,3), (2,3), (3,3)]).
+isLegalMove((X, Y)) :- member(X, [1,2,3]), member(Y, [1,2,3]).
 
+% Utils
+myCall(move, A, B, C) :- move(A, B, C).
+myCall(hueristic_move, A, B, C) :- hueristic_move(A, B, C).
