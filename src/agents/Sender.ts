@@ -29,9 +29,9 @@ export default class Sender {
             strategy + ', ' + //Strategy
             mapString + //Map
             ').';
+        console.log(`Sender query: ${query}`);
         let answers = prolog.execute(this.agentType, query);
         const answer: string = answers[0];
-        console.log(`Sender query: ${query}`);
         console.log(`Sender answer: ${answer}`);
         const regex = new RegExp('\([1-9], [1-9]\)', 'g');
         const matches = answer.match(regex);

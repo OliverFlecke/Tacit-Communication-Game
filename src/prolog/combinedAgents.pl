@@ -95,19 +95,21 @@ getPossibleReceiverMoves([H|T], Errors, Map, ReceiverGoal, 2, 1) :-
     length(ReceiverGoal, L),
     L>0. */
 
-
+getPathNotInMap(C, ReceiverGoal, SenderGoal, Path, Order, Strategy, Map) :-
+    getPath(C, ReceiverGoal, SenderGoal, Path, Order, Strategy, Map),
+    !,
+    \+ member({Path, _}, Map).
 %Sender
 getSenderMove(_, ReceiverGoal, SenderGoal, Path, _, _, Map) :-
     member({Path, ReceiverGoal}, Map),
     append(_, [SenderGoal], Path), !.
 
 getSenderMove(C, ReceiverGoal, SenderGoal, Path, Order, Strategy, Map) :-
-    getPath(C, ReceiverGoal, SenderGoal, Path, Order, Strategy, Map),
-    \+ member({Path, _}, Map), !.
+    getPathNotInMap(C, ReceiverGoal, SenderGoal, Path, Order, Strategy, Map), !.
 
-getSenderMove(CurrentLocation, ReceiverGoal, SenderGoal, Path, _, 1, Map):-
-    member({Path, RGX}, Map),
-    RGX \== ReceiverGoal,
+getSenderMove(CurrentLocation, ReceiverGoal, SenderGoal, Path, _, 1, _):-
+    % member({Path, RGX}, Map),
+    % RGX \== ReceiverGoal,
     aux_getPath(CurrentLocation, ReceiverGoal, StartToReceiverPath, hueristic_move),
     aux_getPath(ReceiverGoal, ReceiverGoal, ReceiverToReceiverPath, move),
     length(ReceiverToReceiverPath, L),
@@ -170,28 +172,44 @@ combinePath(X, [H|Y], Path) :-
 combinePath(X, Y, Path) :- append(X, Y, Path).
 
 aux_getPath(X, X, [X], _).
-aux_getPath(X, Y, [X|Path], MoveFunction) :- aux_getPathHelper(X, Y, Path, MoveFunction).
+aux_getPath(X, Y, [X|Path], MoveFunction) :-
+    (var(Path) -> L is 0 ; length(Path, L)),
+    aux_getPathHelper(X, Y, Path, MoveFunction, L).
 
-aux_getPathHelper(X, X, [], _).
-aux_getPathHelper(X, Y, [H|T], MoveFunction) :-
-    X \== Y,
-    % length(T, L), (L < 10 -> (
-    findall(J, myCall(MoveFunction, X, J, Y), ResultList),
-    member(H, ResultList),
-    aux_getPathHelper(H, Y, T, MoveFunction).
-        % ;
-        % (!, fail)).
-aux_getPathHelper(_, _, P, _) :- length(P, L), L > 10, !.
-aux_getPathHelper(X, X, [H|T], MoveFunction) :-
+
+check_length([_], _).
+check_length([_, _], _).
+check_length([_, _, _], _).
+check_length([_, _, _, _], MoveFunction) :- MoveFunction \== move.
+check_length([_, _, _, _, _], MoveFunction) :- MoveFunction \== move.
+
+aux_getPathHelper(_, _, _, _, 10) :- !, fail.
+aux_getPathHelper(X, X, [], hueristic_move, _) :- !.
+aux_getPathHelper(X, X, [], _, _).
+aux_getPathHelper(X, X, [H|T], MoveFunction, L) :-
+    check_length([H|T], MoveFunction),
     findall(J, move(X, J, X), ResultList),
     member(H, ResultList),
-    aux_getPathHelper(H, X, T, MoveFunction).
+    aux_getPathHelper(H, X, T, MoveFunction, L + 1).
+aux_getPathHelper(X, Y, [H|T], MoveFunction, L) :-
+    check_length([H|T], MoveFunction),
+    findall(J, myCall(MoveFunction, X, J, Y), ResultList),
+    member(H, ResultList),
+    aux_getPathHelper(H, Y, T, MoveFunction, L + 1).
 
 
 abs(X, Y) :-
     X < 0,
     Y is -X, !.
 abs(X, X).
+
+% manhattan_dist((CLX, CLY), (GX, GY), D) :-
+%     tracing,
+%     notrace,
+%     manhattan_dist2((CLX, CLY), (GX, GY), D),
+%     trace.
+% manhattan_dist((CLX, CLY), (GX, GY), D) :-
+%     manhattan_dist2((CLX, CLY), (GX, GY), D).
 
 manhattan_dist((CLX, CLY), (GX, GY), D) :-
     abs(GX - CLX, X),
