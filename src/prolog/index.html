@@ -1,0 +1,58 @@
+<html lang="en">
+
+<head>
+    <script src="./jquery-2.0.3.min.js"></script>
+    <!-- <script src="./pengines.js"></script> -->
+    <!-- <script type="text/x-prolog">
+
+	        q(X) :- p(X).
+
+		    p(a). p(b). p(c). p(d). p(e). p(f). p(g).
+
+        </script> -->
+    <script>
+
+        $.ajax({
+            type: "POST",
+            url: "http://localhost:3030/pengine/create",
+            contentType: "application/json; charset=utf-8",
+        });
+
+        const prologData = {
+            "src_text":
+                "q(X) :- p(X).\n\n\t\t    p(a). p(b). p(c). p(d). p(e). p(f). p(g).\n",
+            "format": "json",
+            "ask": "q(X)"
+        }
+        $.ajax({
+            type: "POST",
+            url: "http://localhost:3030/pengine" +
+                '/send?format=JSON' +
+                '&id=' + '959eeba7-3103-41e9-a2dc-f55a8c04a419',
+            data: prologData,
+            contentType: "application/x-prolog; charset=UTF-8",
+            success: function (obj) {
+                console.log(obj);
+                // pengine.process_response(obj);
+            },
+            error: function (jqXHR, textStatus, errorThrown) {
+                console.log('error');
+                console.log(jqXHR);
+                console.log(textStatus);
+                console.log(errorThrown);
+                // pengine.error(jqXHR, textStatus, errorThrown);
+            },
+            complete: function () {
+                console.log('complete');
+                // pengine.request = undefined;
+            }
+        });
+    </script>
+</head>
+
+<body>
+    <div id="out"></div>
+    <button id="next" onclick="pengine.next()">Next</button>
+</body>
+
+</html>

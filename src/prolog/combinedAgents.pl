@@ -1,6 +1,7 @@
 :- use_module(library(lists)).
 :- use_module(library(random)).
 
+
 /* Strategy:
     0 - Short
     1 - Short + Goal
@@ -62,7 +63,7 @@ getPossibleReceiverMoves(_, Errors, _, ReceiverGoal, 0, 0) :-
 getPossibleReceiverMoves([H|T], Errors, Map, ReceiverGoal, Order, Strategy) :-
     Order > 0,
     append(_, [SenderGoal], [H|T]),
-    Temp is Order -1,
+    Temp is Order - 1,
     findall(X, (move(H, X, _), getSenderMove(H, X, SenderGoal, [H|T], Temp, Strategy, Map)), RGL),
     setSubtract([H|RGL], Errors, ReceiverGoal).
 
