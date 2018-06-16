@@ -2,7 +2,32 @@
 
 <head>
     <script src="./jquery-2.0.3.min.js"></script>
-    <!-- <script src="./pengines.js"></script> -->
+    <script src="./pengines.js"></script>
+    <script type="text/x-prolog">
+
+        main :-
+            repeat,
+            pengine_input(X),
+            pengine_output(X),
+            X == stop.
+
+    </script>
+    <script>
+        var pengine = new Pengine({
+            oncreate: handleCreate,
+            onprompt: handlePrompt,
+            onoutput: handleOutput
+        });
+        function handleCreate() {
+            pengine.ask('main');
+        }
+        function handlePrompt() {
+            pengine.input(prompt(this.data));
+        }
+        function handleOutput() {
+            $('#out').html(this.data);
+        }
+    </script>
     <!-- <script type="text/x-prolog">
 
 	        q(X) :- p(X).
@@ -10,7 +35,7 @@
 		    p(a). p(b). p(c). p(d). p(e). p(f). p(g).
 
         </script> -->
-    <script>
+    <!-- <script>
 
         $.ajax({
             type: "POST",
@@ -36,10 +61,8 @@
                 // pengine.process_response(obj);
             },
             error: function (jqXHR, textStatus, errorThrown) {
-                console.log('error');
-                console.log(jqXHR);
-                console.log(textStatus);
-                console.log(errorThrown);
+                console.log(jqXHR.status);
+                // console.log(textStatus);
                 // pengine.error(jqXHR, textStatus, errorThrown);
             },
             complete: function () {
@@ -47,7 +70,7 @@
                 // pengine.request = undefined;
             }
         });
-    </script>
+    </script> -->
 </head>
 
 <body>

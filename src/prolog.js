@@ -21,6 +21,7 @@ catch (ex) {
 var pl = require("./lib/core.js");
 require("./lib/lists.js")(pl);
 require("./lib/random.js")(pl);
+require("./lib/statistics.js")(pl);
 
 let program = readFile('receiver');
 let session = pl.create(1000000);

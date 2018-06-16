@@ -1,13 +1,8 @@
-:- use_module(library(lists)).
-:- use_module(library(random)).
-
-
 /* Strategy:
     0 - Short
     1 - Short + Goal
     2 - Minimize number of unique cells
     3 - Symmetry
-
 */
 
 %Auxillary Function
@@ -17,20 +12,6 @@ setSubtract([A|C], B, D) :-
         setSubtract(C, B, D).
 setSubtract([A|B], C, [A|D]) :-
         setSubtract(B, C, D).
-
-% aux_matchMap(_,[],[]).
-
-% aux_matchMap(Path, Map, Output) :-
-%     append(_, [X], Path),
-%     append(W, [{Q,_}], Map),
-%     \+ append(_, [X], Q),
-%     aux_matchMap(Path, W, Output).
-
-% aux_matchMap(Path, Map, [Y|Z]) :-
-%     append(_, [X], Path),
-%     append(W, [{Q,Y}], Map),
-%     append(_, [X], Q),
-%     aux_matchMap(Path, W, Z).
 
 %Receiver
 %Params: Path, Errors, Map, Result, Order, Strategy
@@ -60,12 +41,18 @@ getPossibleReceiverMoves(_, Errors, _, ReceiverGoal, 0, 0) :-
     setSubtract([(1,1), (2,1), (3,1), (1,2), (2,2), (3,2), (1,3), (2,3), (3,3)], Errors, ReceiverGoal).
 
 %First Order, Shortest Path(0),
-getPossibleReceiverMoves([H|T], Errors, Map, ReceiverGoal, Order, Strategy) :-
+getPossibleReceiverMoves([H|T], Errors, Map, [ReceiverGoal], Order, Strategy) :-
     Order > 0,
     append(_, [SenderGoal], [H|T]),
     Temp is Order - 1,
-    findall(X, (move(H, X, _), getSenderMove(H, X, SenderGoal, [H|T], Temp, Strategy, Map)), RGL),
-    setSubtract([H|RGL], Errors, ReceiverGoal).
+    % findall(X, (move(H, X, _), getSenderMove(H, X, SenderGoal, [H|T], Temp, Strategy, Map)), RGL),
+    move(H, ReceiverGoal, _),
+    getSenderMove(H, ReceiverGoal, SenderGoal, [H|T], Temp, Strategy, Map),
+    % setSubtract([H|RGL], Errors, ReceiverGoal)
+    \+ member(ReceiverGoal, Errors).
+
+getPossibleReceiverMoves([ReceiverGoal|_], Errors, _, [ReceiverGoal], _, _) :-
+    \+ member(ReceiverGoal, Errors).
 
 /* %First Order, Shortest Goal Path(1),
 getPossibleReceiverMoves([H|T], Errors, Map, ReceiverGoal, 1, 1) :-
