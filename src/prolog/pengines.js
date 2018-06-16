@@ -1,7 +1,14 @@
-// var $ = require('jquery');
-// const jsdom = require("jsdom");
-// const { JSDOM } = jsdom;
-// const { window } = new JSDOM(`<!DOCTYPE html><p>Hello world</p>`);
+var jsdom = require('jsdom');
+const { JSDOM } = jsdom;
+const { document } = (new JSDOM('')).window;
+global.document = document;
+
+const filepath = 'src/prolog/combinedAgents.pl';
+var fs = require('fs');
+var program = fs.readFileSync(filepath, { encoding: 'utf-8' });
+// console.log(program);
+
+var $ = require('jquery')((new JSDOM(``)).window);
 
 /*  Copyright (c) 2014, Torbjörn Lager
     All rights reserved.
@@ -31,9 +38,9 @@
     POSSIBILITY OF SUCH DAMAGE.
 */
 
-		 /*******************************
-		 *	    CONSTRUCTOR		*
-		 *******************************/
+/*******************************
+*	    CONSTRUCTOR		*
+*******************************/
 
 /**
  * Create a Prolog engine (Pengine). The constructor is handed an object
@@ -79,435 +86,448 @@
  */
 
 function Pengine(options) {
-  var that = this;
+    var that = this;
 
-  // private functions
-  function fillDefaultOptions(options) {
-    for(var k in Pengine.options) {
-      if ( Pengine.options.hasOwnProperty(k) &&
-	   options[k] === undefined )
-	options[k] = Pengine.options[k];
+    // private functions
+    function fillDefaultOptions(options) {
+        for (var k in Pengine.options) {
+            if (Pengine.options.hasOwnProperty(k) &&
+                options[k] === undefined)
+                options[k] = Pengine.options[k];
+        }
+
+        return options;
     }
 
-    return options;
-  }
-
-  function copyOptions(to, from, list) {
-    for(var i=0; i<list.length; i++) {
-      var k = list[i];
-      if ( from[k] !== undefined )
-	to[k] = from[k];
+    function copyOptions(to, from, list) {
+        for (var i = 0; i < list.length; i++) {
+            var k = list[i];
+            if (from[k] !== undefined)
+                to[k] = from[k];
+        }
     }
-  }
 
-  // create instance
-  this.options = fillDefaultOptions(options);
-  this.id = null;
+    // create instance
+    this.options = fillDefaultOptions(options);
+    this.id = null;
 
-  // On creation
-  var src = this.options.src ? [this.options.src] : [];
-  var createOptions = {
-    src_text: this.script_sources(src).join('\n')
-  };
+    // On creation
+    var src = this.options.src ? [this.options.src] : [];
+    var createOptions = {
+        src_text: program
+    };
 
-  copyOptions(createOptions, options,
-	      [ "format",
-		"application",
-		"ask",
-		"template",
-		"chunk",
-		"destroy"
-	      ]);
+    copyOptions(createOptions, options,
+        ["format",
+            "application",
+            "ask",
+            "template",
+            "chunk",
+            "destroy"
+        ]);
+    // console.log(JSON.stringify(createOptions));
 
-  this.request =
-  $.ajax(this.options.server + '/create',
-	 { contentType: "application/json; charset=utf-8",
-	   dataType: "json",
-	   data: JSON.stringify(createOptions),
-	   type: "POST",
-	   success: function(obj) {
-	     that.process_response(obj);
-	   },
-	   error: function(jqXHR, textStatus, errorThrown) {
-	     that.error(jqXHR, textStatus, errorThrown);
-	   },
-	   complete: function() {
-	     that.request = undefined;
-	   }
-	 });
+    this.request =
+        $.ajax(this.options.server + '/create',
+            {
+                contentType: "application/json; charset=utf-8",
+                dataType: "json",
+                data: JSON.stringify(createOptions),
+                type: "POST",
+                success: function (obj) {
+                    that.process_response(obj);
+                },
+                error: function (jqXHR, textStatus, errorThrown) {
+                    that.error(jqXHR, textStatus, errorThrown);
+                },
+                complete: function () {
+                    that.request = undefined;
+                }
+            });
 
 }/*end of Pengine()*/
 
 
-		 /*******************************
-		 *	     METHODS		*
-		 *******************************/
+/*******************************
+*	     METHODS		*
+*******************************/
 
-(function() {
-Pengine.alive = [];
+(function () {
+    Pengine.alive = [];
 
-/**
- * Default options for `new Pengine()`
- */
-Pengine.options = {
-  format: "json",
-  server: "/pengine"
-};
+    /**
+     * Default options for `new Pengine()`
+     */
+    Pengine.options = {
+        format: "json",
+        server: "/pengine"
+    };
 
-/**
- * Ask Prolog to execute a query. May also be specified as an option
- * when creating the Pengine.
- * @param {String} query is the Prolog query in Prolog syntax.  Use
- * `Pengine.stringify()` when constructing the query from JavaScript
- * data.
- * @param {Object} [options] provides additional options.  The option
- * values must be valid Prolog.  For example, `{chunk: 10}`.
- */
-Pengine.prototype.ask = function(query, options) {
-  this.send('ask((' + query + '), ' + options_to_list(options) + ')');
-};
+    /**
+     * Ask Prolog to execute a query. May also be specified as an option
+     * when creating the Pengine.
+     * @param {String} query is the Prolog query in Prolog syntax.  Use
+     * `Pengine.stringify()` when constructing the query from JavaScript
+     * data.
+     * @param {Object} [options] provides additional options.  The option
+     * values must be valid Prolog.  For example, `{chunk: 10}`.
+     */
+    Pengine.prototype.ask = function (query, options) {
+        this.send('ask((' + query + '), ' + options_to_list(options) + ')');
+    };
 
-/**
- * Ask for more results.  May be called from the `onsuccess` callback
- * if `obj.more` equals `true`
- * @param {Int} n is the chunk-size for the next chunk of answers.
- */
-Pengine.prototype.next = function(n) {
-  if ( n === undefined )
-    this.send('next');
-  else
-    this.send('next('+n+')');
-};
+    /**
+     * Ask for more results.  May be called from the `onsuccess` callback
+     * if `obj.more` equals `true`
+     * @param {Int} n is the chunk-size for the next chunk of answers.
+     */
+    Pengine.prototype.next = function (n) {
+        if (n === undefined)
+            this.send('next');
+        else
+            this.send('next(' + n + ')');
+    };
 
-/**
- * Ask the pengine to stop.  May be called from the `onsuccess` callback
- * if `obj.more` equals `true`
- */
-Pengine.prototype.stop = function() {
-  this.send('stop');
-};
+    /**
+     * Ask the pengine to stop.  May be called from the `onsuccess` callback
+     * if `obj.more` equals `true`
+     */
+    Pengine.prototype.stop = function () {
+        this.send('stop');
+    };
 
-/**
- * Respond with a value after the pengines `onprompt` callback has been
- * called.
- */
-Pengine.prototype.respond = function(input) {
-  this.send('input((' + input + '))');
-};
+    /**
+     * Respond with a value after the pengines `onprompt` callback has been
+     * called.
+     */
+    Pengine.prototype.respond = function (input) {
+        this.send('input((' + input + '))');
+    };
 
-/**
- * Abort the pengine.  May be called at any time.
- */
-Pengine.prototype.abort = function() {
-  var pengine = this;
+    /**
+     * Abort the pengine.  May be called at any time.
+     */
+    Pengine.prototype.abort = function () {
+        var pengine = this;
 
-  if ( this.request ) {
-    this.request.pengine_aborted = true;
-    this.request.abort();
-  }
+        if (this.request) {
+            this.request.pengine_aborted = true;
+            this.request.abort();
+        }
 
-  this.request =
-  $.get(this.options.server + '/abort',
-	{ id: this.id,
-	  format: this.options.format
-	},
-	function(obj) {
-	  pengine.process_response(obj);
-	}).fail(function(jqXHR, textStatus, errorThrown) {
-	  pengine.error(jqXHR, textStatus, errorThrown);
-	}).always(function() {
-	  pengine.request = undefined;
-	});
-};
+        this.request =
+            $.get(this.options.server + '/abort',
+                {
+                    id: this.id,
+                    format: this.options.format
+                },
+                function (obj) {
+                    pengine.process_response(obj);
+                }).fail(function (jqXHR, textStatus, errorThrown) {
+                    pengine.error(jqXHR, textStatus, errorThrown);
+                }).always(function () {
+                    pengine.request = undefined;
+                });
+    };
 
-/**
- * Ping the status of the pengine.
- * @param {Number} [interval] If `undefined`, send a single ping.  If
- * > 0, set/change periodic ping event, if 0, clear periodic interval.
- */
-Pengine.prototype.ping = function(interval) {
-  var pengine = this;
+    /**
+     * Ping the status of the pengine.
+     * @param {Number} [interval] If `undefined`, send a single ping.  If
+     * > 0, set/change periodic ping event, if 0, clear periodic interval.
+     */
+    Pengine.prototype.ping = function (interval) {
+        var pengine = this;
 
-  if ( interval == undefined ) {
-    if ( this.id ) {				/* Might not be there yet */
-      $.get(this.options.server + '/ping',
-	    { id: this.id,
-	      format: this.options.format
-	    },
-	    function(obj) {
-	      pengine.process_response(obj);
-	    }).fail(function(jqXHR, textStatus, errorThrown) {
-	      pengine.error(jqXHR, textStatus, errorThrown);
-	    });
+        if (interval == undefined) {
+            if (this.id) {				/* Might not be there yet */
+                $.get(this.options.server + '/ping',
+                    {
+                        id: this.id,
+                        format: this.options.format
+                    },
+                    function (obj) {
+                        pengine.process_response(obj);
+                    }).fail(function (jqXHR, textStatus, errorThrown) {
+                        pengine.error(jqXHR, textStatus, errorThrown);
+                    });
+            }
+        } else {
+            if (pengine.pingid)
+                clearInterval(pengine.pingid);
+            if (interval > 0)
+                pengine.pingid = setInterval(function () {
+                    pengine.ping();
+                }, interval);
+            else
+                delete pengine.pingid;
+        }
+    };
+
+    /**
+     * Destroy the pengine. May be called at any time.
+     */
+    Pengine.prototype.destroy = function () {
+        if (!this.died) {
+            this.died = true;
+            this.send('destroy');
+        }
+    };
+
+    // internal methods
+
+    /**
+     * Process the reply to a `pull_response`.  If the last answer was
+     * final, this question will be asked to a death pengine.  We do not
+     * consider this an error.
+     */
+    Pengine.prototype.pull_response = function () {
+        var pengine = this;
+
+        this.request =
+            $.get(this.options.server + '/pull_response',
+                {
+                    id: this.id,
+                    format: this.options.format
+                },
+                function (obj) {
+                    if (obj.event !== 'died')
+                        pengine.process_response(obj);
+                }).fail(function (jqXHR, textStatus, errorThrown) {
+                    pengine.error(jqXHR, textStatus, errorThrown);
+                }).always(function () {
+                    pengine.request = undefined;
+                });
+    };
+
+    /**
+     * Invoke `/pengine/send`.  This method takes three parameters: the
+     * reply format (one of `prolog` or `json`), the pengine id (a UUID)
+     * and the event (a serialized Prolog term).  In old versions, this
+     * was sent as a GET request.  This is undesirable, both because GET
+     * assumes a side-effect-free operation and because of the size limit
+     * to URLs imposed by some infrastructure.  The current version passes
+     * the format and id as URL parameters and the content as a POST body.
+     *
+     * Future versions might use the HTTP Accept header intead of format
+     * and add the id to the URL, i.e., using `/pengine/send/ID`
+     */
+    Pengine.prototype.send = function (event) {
+        var pengine = this;
+
+        // console.log('Sending');
+        // console.log(`Event: ${event}`);
+
+        const url =  pengine.options.server +
+            '/send?format=' + this.options.format +
+            '&id=' + this.id;
+        // console.log(url);
+        this.request =
+            $.ajax({
+                type: "POST",
+                url: url,
+                data: event + " .\n",
+                contentType: "application/x-prolog; charset=UTF-8",
+                success: function (obj) {
+                    pengine.process_response(obj);
+                },
+                error: function (jqXHR, textStatus, errorThrown) {
+                    pengine.error(jqXHR, textStatus, errorThrown);
+                },
+                complete: function () {
+                    pengine.request = undefined;
+                }
+            });
+        // console.log(this.request);
+        // console.log('Done sending');
+    };
+
+    Pengine.prototype.script_sources = function (src) {
+        var scripts = document.getElementsByTagName('script');
+
+        src = src || [];
+        for (var i = 0; i < scripts.length; i++) {
+            if (scripts[i].getAttribute('type') == 'text/x-prolog') {
+                src.push(scripts[i].textContent);
+            }
+        }
+
+        return src;
+    };
+
+    Pengine.prototype.process_response = function (obj) {
+        obj.pengine = this;
+        Pengine.onresponse[obj.event].call(this, obj);
+    };
+
+    Pengine.prototype.callback = function (f, obj) {
+        if (this.options[f])
+            return this.options[f].call(obj, obj);
+        return "not implemented";
+    };
+
+    /**
+     * Called on AJAX interaction error.  Unfortunately, we have little
+     * information.  Is this error permanent?  If so, we should unregister
+     * the pengine.  If not, we could just report the error and allow the
+     * application to retry.
+     */
+
+    Pengine.prototype.error = function (jqXHR, textStatus, errorThrown) {
+        if (jqXHR.pengine_aborted)
+            return;
+
+        var obj = { event: "error", pengine: this };
+
+        if (jqXHR.responseText) {
+            var msg = jqXHR.responseText.replace(/[^]*<body[^>]*>/, "")
+                .replace(/<\/body>/, "");
+            var plain = $("<div></div>").html(msg).text();
+            obj.data = plain;
+            obj.dataHTML = msg;
+        } else if (textStatus) {
+        obj.data = "Server status: " + textStatus;
+        } else if (errorThrown) {
+        obj.data = "Server error: " + errorThrown;
+        }
+        if (!obj.dataHTML && obj.data)
+            obj.dataHTML = '<span class="error">' + obj.data + '</span>';
+
+        unregisterPengine(this);		/* see above */
+
+        this.process_response(obj);
     }
-  } else {
-    if ( pengine.pingid )
-      clearInterval(pengine.pingid);
-    if ( interval > 0 )
-      pengine.pingid = setInterval(function() {
-	pengine.ping();
-      }, interval);
-    else
-      delete pengine.pingid;
-  }
-};
 
-/**
- * Destroy the pengine. May be called at any time.
- */
-Pengine.prototype.destroy = function() {
-  if ( !this.died ) {
-    this.died = true;
-    this.send('destroy');
-  }
-};
 
-// internal methods
+    Pengine.prototype.report = function (level, data) {
+        if (console !== undefined)
+            console[level](data);
+        else if (level === 'error')
+            alert(data);
+    };
 
-/**
- * Process the reply to a `pull_response`.  If the last answer was
- * final, this question will be asked to a death pengine.  We do not
- * consider this an error.
- */
-Pengine.prototype.pull_response = function() {
-  var pengine = this;
 
-  this.request =
-  $.get(this.options.server + '/pull_response',
-	{ id: this.id,
-	  format: this.options.format
-	},
-	function(obj) {
-	  if ( obj.event !== 'died')
-	    pengine.process_response(obj);
-	}).fail(function(jqXHR, textStatus, errorThrown) {
-	  pengine.error(jqXHR, textStatus, errorThrown);
-	}).always(function() {
-	  pengine.request = undefined;
-	});
-};
+    /*******************************
+    *	  HANDLE EVENTS		*
+    *******************************/
 
-/**
- * Invoke `/pengine/send`.  This method takes three parameters: the
- * reply format (one of `prolog` or `json`), the pengine id (a UUID)
- * and the event (a serialized Prolog term).  In old versions, this
- * was sent as a GET request.  This is undesirable, both because GET
- * assumes a side-effect-free operation and because of the size limit
- * to URLs imposed by some infrastructure.  The current version passes
- * the format and id as URL parameters and the content as a POST body.
- *
- * Future versions might use the HTTP Accept header intead of format
- * and add the id to the URL, i.e., using `/pengine/send/ID`
- */
-Pengine.prototype.send = function(event) {
-  var pengine = this;
+    Pengine.onresponse = {
+        create: function (obj) {
+            this.id = obj.id;
+            Pengine.alive.push(this);
 
-  this.request =
-  $.ajax({ type: "POST",
-	   url: pengine.options.server +
-		'/send?format=' + this.options.format +
-		'&id=' + this.id,
-	   data: event + " .\n",
-	   contentType: "application/x-prolog; charset=UTF-8",
-	   success: function(obj) {
-	     pengine.process_response(obj);
-	   },
-	   error: function(jqXHR, textStatus, errorThrown) {
-	     pengine.error(jqXHR, textStatus, errorThrown);
-	   },
-	   complete: function() {
-	     pengine.request = undefined;
-	   }
-         });
-};
+            if (Pengine.alive.length > obj.slave_limit) {
+                this.destroy();
+                obj.data = "Attempt to create too many pengines. " +
+                    "The limit is: " + obj.slave_limit;
+                obj.code = "too_many_pengines";
+                if (!this.callback('onerror', obj))
+                    this.report('error', obj.data);
+            } else {
+                this.callback('oncreate', obj);
+                if (obj.answer)
+                    this.process_response(obj.answer);
+            }
+        },
 
-Pengine.prototype.script_sources = function(src) {
-  var scripts = document.getElementsByTagName('script');
+        stop: function (obj) { this.callback('onstop', obj); },
+        failure: function (obj) { this.callback('onfailure', obj); },
+        prompt: function (obj) { this.callback('onprompt', obj); },
 
-  src = src||[];
-  for (var i = 0; i < scripts.length; i++) {
-    if (scripts[i].getAttribute('type') == 'text/x-prolog') {
-      src.push(scripts[i].textContent);
+        success: function (obj) {
+            if (this.callback('onsuccess', obj) != false &&
+                this.options.ondata) {
+                for (i = 0; i < obj.data.length; i++) {
+                    this.options.ondata.call(obj, obj.data[i]);
+                }
+                if (obj.more)
+                    obj.pengine.next();
+            }
+        },
+
+        error: function (obj) {
+            if (obj.code == "existence_error" &&
+                obj.arg1 == "pengine" &&
+                obj.arg2 == this.id)
+                unregisterPengine(this);
+
+            if (this.callback('onerror', obj) == "not implemented")
+                this.report('error', obj.data);
+        },
+
+        output: function (obj) {
+            if (!this.id)
+                this.id = obj.id;
+            this.callback('onoutput', obj);
+            this.pull_response();
+        },
+
+        ping: function (obj) {
+            this.callback('onping', obj);
+        },
+
+        debug: function (obj) {
+            if (this.callback('ondebug', obj) == "not implemented")
+                this.report('log', obj.data);
+            this.pull_response();
+        },
+
+        abort: function (obj) {
+            this.aborted = true;
+            this.callback('onabort', obj);
+        },
+
+        destroy: function (obj) {
+            unregisterPengine(this);
+            if (obj.data)
+                this.process_response(obj.data);
+            this.callback('ondestroy', obj);
+        },
+
+        died: function (obj) {
+            unregisterPengine(this);
+            if (!this.aborted) {
+                obj.data = "Pengine has died";
+                obj.code = "died";
+                if (!this.callback('onerror', obj))
+                    this.report('error', obj.data);
+            }
+        }
+    };
+
+
+    /*******************************
+    *	PRIVATE FUNCTIONS	*
+    *******************************/
+
+    function unregisterPengine(pengine) {
+        if (pengine.pingid) {
+            clearInterval(pengine.pingid);
+            delete pengine.pingid;
+        }
+
+        var index = Pengine.alive.indexOf(pengine);
+        if (index > -1)
+            Pengine.alive.splice(index, 1);
+
+        pengine.died = true;
     }
-  }
 
-  return src;
-};
-
-Pengine.prototype.process_response = function(obj) {
-  obj.pengine = this;
-  Pengine.onresponse[obj.event].call(this, obj);
-};
-
-Pengine.prototype.callback = function(f, obj) {
-  if ( this.options[f] )
-    return this.options[f].call(obj, obj);
-  return "not implemented";
-};
-
-/**
- * Called on AJAX interaction error.  Unfortunately, we have little
- * information.  Is this error permanent?  If so, we should unregister
- * the pengine.  If not, we could just report the error and allow the
- * application to retry.
- */
-
-Pengine.prototype.error = function(jqXHR, textStatus, errorThrown) {
-  if ( jqXHR.pengine_aborted )
-    return;
-
-  var obj = { event:"error", pengine:this };
-
-  if ( jqXHR.responseText ) {
-    var msg = jqXHR.responseText.replace(/[^]*<body[^>]*>/, "")
-				.replace(/<\/body>/, "");
-    var plain = $("<div></div>").html(msg).text();
-    obj.data = plain;
-    obj.dataHTML = msg;
-  } else if ( textStatus )
-  { obj.data = "Server status: " + textStatus;
-  } else if ( errorThrown )
-  { obj.data = "Server error: " + errorThrown;
-  }
-  if ( !obj.dataHTML && obj.data )
-    obj.dataHTML = '<span class="error">'+obj.data+'</span>';
-
-  unregisterPengine(this);		/* see above */
-
-  this.process_response(obj);
-}
-
-
-Pengine.prototype.report = function(level, data) {
-  if ( console !== undefined )
-    console[level](data);
-  else if ( level === 'error' )
-    alert(data);
-};
-
-
-		 /*******************************
-		 *	  HANDLE EVENTS		*
-		 *******************************/
-
-Pengine.onresponse = {
-  create: function(obj) {
-    this.id = obj.id;
-    Pengine.alive.push(this);
-
-    if ( Pengine.alive.length > obj.slave_limit ) {
-      this.destroy();
-      obj.data = "Attempt to create too many pengines. "+
-		 "The limit is: " + obj.slave_limit;
-      obj.code = "too_many_pengines";
-      if ( !this.callback('onerror', obj) )
-	this.report('error', obj.data);
-    } else {
-      this.callback('oncreate', obj);
-      if ( obj.answer )
-	this.process_response(obj.answer);
+    /**
+     * Turn an object into a Prolog option list.  The option values
+     * must be valid Prolog syntax.  Use Pengine.stringify() when
+     * applicable.
+     */
+    function options_to_list(options) {
+        var opts = "[";
+        for (var name in options) {
+            if (opts !== "[")
+                opts += ",";
+            if (options.hasOwnProperty(name)) {
+                opts += name + "(" + options[name] + ")";
+            }
+        }
+        return opts + "]";
     }
-  },
-
-  stop:    function(obj) { this.callback('onstop',    obj); },
-  failure: function(obj) { this.callback('onfailure', obj); },
-  prompt:  function(obj) { this.callback('onprompt',  obj); },
-
-  success: function(obj) {
-    if ( this.callback('onsuccess', obj) != false &&
-	 this.options.ondata ) {
-      for(i=0; i<obj.data.length; i++) {
-	this.options.ondata.call(obj, obj.data[i]);
-      }
-      if ( obj.more )
-	obj.pengine.next();
-    }
-  },
-
-  error: function(obj) {
-    if ( obj.code == "existence_error" &&
-	 obj.arg1 == "pengine" &&
-	 obj.arg2 == this.id )
-      unregisterPengine(this);
-
-    if ( this.callback('onerror', obj) == "not implemented" )
-      this.report('error', obj.data);
-  },
-
-  output: function(obj) {
-    if ( !this.id )
-      this.id = obj.id;
-    this.callback('onoutput', obj);
-    this.pull_response();
-  },
-
-  ping: function(obj) {
-    this.callback('onping', obj);
-  },
-
-  debug: function(obj) {
-    if ( this.callback('ondebug', obj) == "not implemented" )
-      this.report('log', obj.data);
-    this.pull_response();
-  },
-
-  abort: function(obj) {
-    this.aborted = true;
-    this.callback('onabort', obj);
-  },
-
-  destroy: function(obj) {
-    unregisterPengine(this);
-    if ( obj.data )
-      this.process_response(obj.data);
-    this.callback('ondestroy', obj);
-  },
-
-  died: function(obj) {
-    unregisterPengine(this);
-    if ( !this.aborted ) {
-      obj.data = "Pengine has died";
-      obj.code = "died";
-      if ( !this.callback('onerror', obj) )
-	this.report('error', obj.data);
-    }
-  }
-};
-
-
-		 /*******************************
-		 *	PRIVATE FUNCTIONS	*
-		 *******************************/
-
-function unregisterPengine(pengine) {
-  if ( pengine.pingid ) {
-    clearInterval(pengine.pingid);
-    delete pengine.pingid;
-  }
-
-  var index = Pengine.alive.indexOf(pengine);
-  if ( index > -1 )
-    Pengine.alive.splice(index, 1);
-
-  pengine.died = true;
-}
-
-/**
- * Turn an object into a Prolog option list.  The option values
- * must be valid Prolog syntax.  Use Pengine.stringify() when
- * applicable.
- */
-function options_to_list(options) {
-  var opts = "[";
-  for (var name in options) {
-    if ( opts !== "[" )
-      opts += ",";
-    if ( options.hasOwnProperty(name) ) {
-      opts += name + "(" + options[name] + ")";
-    }
-  }
-  return opts + "]";
-}
 
 })();
 
@@ -534,141 +554,180 @@ function options_to_list(options) {
  * @return {String|undefined} is the Prolog serialization of `data`
  */
 
-Pengine.stringify = function(data, options) {
-  var msg  = "";
-  var strq = options && options.string == "atom" ? "'" : '"';
+Pengine.stringify = function (data, options) {
+    var msg = "";
+    var strq = options && options.string == "atom" ? "'" : '"';
 
-  function serialize(data) {
-    function stringEscape(s, q) {
-      function dec2unicode(i)
-      { var r;
-	if      (i >= 0    && i <= 15)    { r = "\\u000" + i.toString(16); }
-	else if (i >= 16   && i <= 255)   { r = "\\u00"  + i.toString(16); }
-	else if (i >= 256  && i <= 4095)  { r = "\\u0"   + i.toString(16); }
-	else if (i >= 4096 && i <= 65535) { r = "\\u"    + i.toString(16); }
-	return r
-      }
+    function serialize(data) {
+        function stringEscape(s, q) {
+            function dec2unicode(i) {
+                var r;
+                if (i >= 0 && i <= 15) { r = "\\u000" + i.toString(16); }
+                else if (i >= 16 && i <= 255) { r = "\\u00" + i.toString(16); }
+                else if (i >= 256 && i <= 4095) { r = "\\u0" + i.toString(16); }
+                else if (i >= 4096 && i <= 65535) { r = "\\u" + i.toString(16); }
+                return r
+            }
 
-      var result = q;
-      for(var i=0; i<s.length; i++) {
-	var c = s.charAt(i);
-	if ( c >= ' ' ) {
-	       if ( c == '\\' ) result += "\\\\";
-	  else if ( c ==   q  ) result += "\\"+q;
-	  else result += c;
-	} else {
-	       if ( c == '\n' ) result += "\\n";
-	  else if ( c == '\r' ) result += "\\r";
-	  else if ( c == '\t' ) result += "\\t";
-	  else if ( c == '\b' ) result += "\\b";
-	  else if ( c == '\f' ) result += "\\f";
-	  else result += dec2unicode(c.charCodeAt(0));
-	}
-      }
-      return result+q;
+            var result = q;
+            for (var i = 0; i < s.length; i++) {
+                var c = s.charAt(i);
+                if (c >= ' ') {
+                    if (c == '\\') result += "\\\\";
+                    else if (c == q) result += "\\" + q;
+                    else result += c;
+                } else {
+                    if (c == '\n') result += "\\n";
+                    else if (c == '\r') result += "\\r";
+                    else if (c == '\t') result += "\\t";
+                    else if (c == '\b') result += "\\b";
+                    else if (c == '\f') result += "\\f";
+                    else result += dec2unicode(c.charCodeAt(0));
+                }
+            }
+            return result + q;
+        }
+
+        function serializeKey(k) {
+            if (k.match(/^\d+$/)) {
+                msg += k;
+            } else {
+                msg += stringEscape(k, "'");
+            }
+
+            return true;
+        }
+
+        switch (typeof (data)) {
+            case "boolean":
+                msg += data ? "true" : "false";
+                break;
+            case "undefined":
+                msg += "undefined";
+                break;
+            case "number":
+                msg += data;
+                break;
+            case "string":
+                msg += stringEscape(data, strq);
+                break;
+            case "object":
+                if (data == null) {
+                    msg += "null";
+                } else if (Array.isArray(data)) {
+                    msg += "[";
+                    for (var i = 0; i < data.length; i++) {
+                        if (!serialize(data[i]))
+                            return false;
+                        if (i + 1 < data.length)
+                            msg += ",";
+                    }
+                    msg += "]";
+                } else {
+                    var first = true;
+                    msg += "js{";
+                    for (var p in data) {
+                        if (data.hasOwnProperty(p)) {
+                            if (!first)
+                                msg += ",";
+                            else
+                                first = false;
+                            if (!serializeKey(p))
+                                return false;
+                            msg += ":";
+                            if (!serialize(data[p]))
+                                return false;
+                        }
+                    }
+                    msg += "}";
+                }
+                break;
+            default:
+                return false;
+        }
+
+        return true;
     }
 
-    function serializeKey(k) {
-      if ( k.match(/^\d+$/) ) {
-	msg += k;
-      } else {
-	msg += stringEscape(k, "'");
-      }
-
-      return true;
-    }
-
-    switch ( typeof(data) ) {
-      case "boolean":
-	msg += data ? "true" : "false";
-        break;
-      case "undefined":
-	msg += "undefined";
-	break;
-      case "number":
-	msg += data;
-	break;
-      case "string":
-	msg += stringEscape(data, strq);
-	break;
-      case "object":
-	if ( data == null ) {
-	  msg += "null";
-	} else if ( Array.isArray(data) ) {
-	  msg += "[";
-	  for(var i=0; i<data.length; i++) {
-	    if ( !serialize(data[i]) )
-	      return false;
-	    if ( i+1 < data.length )
-	      msg += ",";
-	  }
-	  msg += "]";
-	} else {
-	  var first = true;
-	  msg += "js{";
-	  for(var p in data) {
-	    if ( data.hasOwnProperty(p) ) {
-	      if ( !first )
-		msg += ",";
-	      else
-		first = false;
-	      if ( !serializeKey(p) )
-		return false;
-	      msg += ":";
-	      if ( !serialize(data[p]) )
-		return false;
-	    }
-	  }
-	  msg += "}";
-	}
-	break;
-      default:
-	return false;
-    }
-
-    return true;
-  }
-
-  if ( serialize(data) )
-    return msg;
+    if (serialize(data))
+        return msg;
 }/*end of Pengine.stringify*/
 
 
-		 /*******************************
-		 *	    DESTRUCTION		*
-		 *******************************/
+/*******************************
+*	    DESTRUCTION		*
+*******************************/
 
 /**
  * Destroy all living pengines.  This is called on page unload.  Note
  * that the pengines may live on different servers.
  */
-Pengine.destroy_all = function(async) {
-  if ( Pengine.alive.length > 0 ) {
-    var servers = {};
+Pengine.destroy_all = function (async) {
+    if (Pengine.alive.length > 0) {
+        var servers = {};
 
-    for(var i=0; i<Pengine.alive.length; i++) {
-      var pengine = Pengine.alive[i];
-      var server = pengine.options.server;
+        for (var i = 0; i < Pengine.alive.length; i++) {
+            var pengine = Pengine.alive[i];
+            var server = pengine.options.server;
 
-      if ( servers[server] )
-	servers[server].push(pengine.id);
-      else
-	servers[server] = [pengine.id];
+            if (servers[server])
+                servers[server].push(pengine.id);
+            else
+                servers[server] = [pengine.id];
+        }
+
+        Pengine.alive = [];
+
+        for (var server in servers) {
+            if (servers.hasOwnProperty(server)) {
+                $.ajax({
+                    url: server + '/destroy_all?ids=' + servers[server],
+                    async: async === undefined ? true : false,
+                    timeout: 1000
+                });
+            }
+        }
     }
-
-    Pengine.alive = [];
-
-    for(var server in servers) {
-      if ( servers.hasOwnProperty(server) ) {
-	$.ajax({ url:server + '/destroy_all?ids=' + servers[server],
-	         async: async === undefined ? true : false,
-		 timeout: 1000
-	       });
-      }
-    }
-  }
 };
 
-// $(window).on("beforeunload", function() {
-//   Pengine.destroy_all();
-// });
+//   $(window).on("beforeunload", function() {
+//     Pengine.destroy_all();
+//   });
+
+var answers = [];
+function handleSuccess() {
+    console.log('\nSuccess');
+    this.data.forEach(element => {
+        answers.push(element);
+        // console.log(element);
+    });
+}
+
+function handleError(event) {
+    console.log('\nError');
+    console.log(event.id);
+    console.log(event.data);
+}
+
+function handleCreate(data) {
+    console.log('Created');
+    // console.log(data);
+    // pengine.ask('getSenderMove((2,2), (1, 1), (2, 2), X, 0, 1, [])', { template: 'X', chunk: 1 });
+}
+
+var pengine = new Pengine({
+    server: "http://pengines.swi-prolog.org/pengine",
+    src_text: program,
+    format: 'json',
+    oncreate: handleCreate,
+    onsuccess: handleSuccess,
+    onerror: handleError,
+});
+
+exports.query = function query(query, options) {
+    pengine.ask(query, options);
+    return new Promise((resolve) => {
+        setTimeout(() => resolve(answers), 1000);
+    });
+}
+

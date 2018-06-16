@@ -1,75 +1,26 @@
+var { query } = require('./prolog/pengines.js');
 // Load in all the necessary agent types.
 // import receiver from 'src'
 try {
-    var receiver = require('./prolog/combinedAgents.pl');
-    var sender = require('./prolog/combinedAgents.pl');
-    var test = require("./prolog/test.pl")
+    var filepath = require('./prolog/combinedAgents.pl');
     var isNode = false;
 }
 catch (ex) {
     // console.warn('Unable to load prolog directly. Most likely running in NodeJs');
-    var receiver = 'src/prolog/combinedAgents.pl';
-    // receiver = 'src/prolog/path.pl';
-    var sender = 'src/prolog/combinedAgents.pl';
+    var filepath = 'src/prolog/combinedAgents.pl';
     isNode = true;
-    // To read files
-    var fs = require('fs');
-    var path = require('path');
-}
 
-// Import Tau Prolog core and create a session
-var pl = require("./lib/core.js");
-require("./lib/lists.js")(pl);
-require("./lib/random.js")(pl);
-require("./lib/statistics.js")(pl);
-
-let program = readFile('receiver');
-let session = pl.create(1000000);
-session.consult(program);
-
-if (process.argv[2]) {
-    let query = process.argv[2];
-    session.query(query);
-    console.time('querying');
-    session.answers(x => console.log(pl.format_answer(x)));
-    console.timeEnd('querying');
-}
-
-exports.execute = function execute(agent, query) {
-    // Load the program
-    if (!program) {
-        program = readFile(agent);
-        session.consult(program);
+    try {
+        // To read files in nodeJS
+        var fs = require('fs');
+        var path = require('path');
     }
-
-    // Query the goal
-    session.query(query);
-
-    let answers = [];
-    session.answers(x => {
-        if (x.links) {
-            answers.push(pl.format_answer(x));
-        }
-        else {
-            answers.push(x);
-        }
-    });
-    return answers;
+    catch (ex) {
+        // In GitHub Pages
+    }
 }
 
-function readFile(agent) {
-    let filepath = '';
-    switch (agent) {
-        case 'receiver':
-            filepath = receiver;
-            break;
-        case 'sender':
-            filepath = sender;
-            break;
-        default:
-            break;
-    }
-
+function readFile(filepath) {
     if (isNode) {
         return fs.readFileSync(filepath, { encoding: 'utf-8' });
     }
@@ -82,4 +33,35 @@ function readFile(agent) {
     }
 
     return filepath;
+}
+
+let program = readFile(filepath);
+
+async function execute(text) {
+    console.time('querying');
+    // Query the prolog engine
+    const answers = await query(text, { template: 'X' });
+    console.timeEnd('querying');
+
+    if (typeof answers[0] !== 'object') {
+        console.log(answers[0]);
+    } else {
+        answers[0].forEach(answer => {
+            console.log(answer.args);
+        });
+    }
+
+    return answers;
+}
+
+exports.execute = execute;
+
+if (process.argv[2]) {
+    setTimeout(() => {
+        execute(process.argv[2]);
+    }, 1000);
+} else {
+    setTimeout(() => {
+        execute('getSenderMove((2,2), (1, 1), (2, 2), X, 0, 1, [])');
+    }, 1000);
 }
