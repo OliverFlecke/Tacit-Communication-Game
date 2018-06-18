@@ -47,7 +47,7 @@ const pengine = createPengine(callback);
 function execute(text, queryCallback) {
     // Query the prolog engine
     innerCallback = queryCallback;
-    query(text, { template: 'X' });
+    query(text, { template: 'X', chunk: 1 });
 
     // if (typeof answers[0] !== 'object') {
     //     console.log(answers[0]);
@@ -61,8 +61,8 @@ function execute(text, queryCallback) {
 
 exports.execute = execute;
 
-if (process.argv[2]) {
-    setTimeout(() => {
-        execute(process.argv[2]);
-    }, 1000);
-}
+// if (process.argv[2]) {
+//     setTimeout(() => {
+//         execute(process.argv[2], innerCallback);
+//     }, 1000);
+// }

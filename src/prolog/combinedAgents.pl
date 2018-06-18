@@ -41,15 +41,16 @@ getPossibleReceiverMoves(_, Errors, _, ReceiverGoal, 0, 0) :-
     setSubtract([(1,1), (2,1), (3,1), (1,2), (2,2), (3,2), (1,3), (2,3), (3,3)], Errors, ReceiverGoal).
 
 %First Order, Shortest Path(0),
-getPossibleReceiverMoves([H|T], Errors, Map, [ReceiverGoal], Order, Strategy) :-
+getPossibleReceiverMoves([H|T], Errors, Map, ReceiverGoal, Order, Strategy) :-
     Order > 0,
     append(_, [SenderGoal], [H|T]),
     Temp is Order - 1,
-    % findall(X, (move(H, X, _), getSenderMove(H, X, SenderGoal, [H|T], Temp, Strategy, Map)), RGL),
-    move(H, ReceiverGoal, _),
-    getSenderMove(H, ReceiverGoal, SenderGoal, [H|T], Temp, Strategy, Map),
-    % setSubtract([H|RGL], Errors, ReceiverGoal)
-    \+ member(ReceiverGoal, Errors).
+    findall((X, Y), (isLegalMove((X, Y)), getSenderMove(H, (X, Y), SenderGoal, [H|T], Temp, Strategy, Map)), RGL),
+    setSubtract(RGL, Errors, TempGoals),
+    (same_length(TempGoals, []) ->
+        getPossibleReceiverMoves([H|T], [], Map, ReceiverGoal, Order, Strategy);
+        ReceiverGoal = TempGoals
+    ).
 
 getPossibleReceiverMoves([ReceiverGoal|_], Errors, _, [ReceiverGoal], _, _) :-
     \+ member(ReceiverGoal, Errors).
@@ -93,54 +94,54 @@ getSenderMove(C, ReceiverGoal, SenderGoal, Path, Order, Strategy, Map) :-
 getSenderMove(CurrentLocation, ReceiverGoal, SenderGoal, Path, _, 1, _):-
     % member({Path, RGX}, Map),
     % RGX \== ReceiverGoal,
-    generatePath(CurrentLocation, ReceiverGoal, StartToReceiverPath, hueristic_move),
+    generatePath(CurrentLocation, ReceiverGoal, StartToReceiverPath, heuristic_move),
     generatePath(ReceiverGoal, ReceiverGoal, ReceiverToReceiverPath, move),
     length(ReceiverToReceiverPath, L),
     L>1,
     combinePath(StartToReceiverPath, ReceiverToReceiverPath, StartToReceiverTwicePath),
-    generatePath(ReceiverGoal, SenderGoal, ReceiverToSenderPath, hueristic_move),
+    generatePath(ReceiverGoal, SenderGoal, ReceiverToSenderPath, heuristic_move),
     combinePath(StartToReceiverTwicePath, ReceiverToSenderPath, Path).
 
 
 % Zero Order, Shortest Path(0),
 getPath(CurrentLocation, _, SenderGoal, Path, 0, 0,_):-
-    generatePath(CurrentLocation, SenderGoal, Path, hueristic_move).
+    generatePath(CurrentLocation, SenderGoal, Path, heuristic_move).
 
 %Zero Order, Shortest Goal Path(1),
 getPath(CurrentLocation, ReceiverGoal, SenderGoal, Path, 0, 1, _) :-
-    generatePath(CurrentLocation, ReceiverGoal, P1, hueristic_move),
-    generatePath(ReceiverGoal, SenderGoal, P2, hueristic_move),
+    generatePath(CurrentLocation, ReceiverGoal, P1, heuristic_move),
+    generatePath(ReceiverGoal, SenderGoal, P2, heuristic_move),
     combinePath(P1, P2, Path).
 
 % 1st Order, Shortest Path(0),
 getPath(CurrentLocation, ReceiverGoal, SenderGoal, Path, 1, 0, Map) :-
-    generatePath(CurrentLocation, SenderGoal, Path, hueristic_move),
+    generatePath(CurrentLocation, SenderGoal, Path, heuristic_move),
     getPossibleReceiverMoves(Path, [], Map, RGL, 0, 0),
     member(ReceiverGoal, RGL).
 
 
 % 1st Order, Shortest Goal Path(1)
 getPath(CurrentLocation, SenderGoal, SenderGoal, Path, 1, 1, _) :-
-    generatePath(CurrentLocation, SenderGoal, Path, hueristic_move).
+    generatePath(CurrentLocation, SenderGoal, Path, heuristic_move).
 getPath(CurrentLocation, ReceiverGoal, SenderGoal, Path, 1, 1, Map) :-
-    generatePath(CurrentLocation, ReceiverGoal, P1 , hueristic_move),
-    generatePath(ReceiverGoal, SenderGoal, P2 , hueristic_move),
+    generatePath(CurrentLocation, ReceiverGoal, P1 , heuristic_move),
+    generatePath(ReceiverGoal, SenderGoal, P2 , heuristic_move),
     combinePath(P1, P2, Path),
     getPossibleReceiverMoves(Path, [], Map, RGL, 0, 1),
     member(ReceiverGoal, RGL).
 
 % 2nd Order, Shortest Path(0),
 getPath(CurrentLocation, ReceiverGoal, SenderGoal, Path, 2, 0, Map) :-
-    generatePath(CurrentLocation, SenderGoal, Path, hueristic_move),
+    generatePath(CurrentLocation, SenderGoal, Path, heuristic_move),
     getPossibleReceiverMoves(Path, [], Map, RGL, 1, 0),
     member(ReceiverGoal, RGL).
 
 % 2nd Order, Shortest Goal Path(1),
 getPath(CurrentLocation, SenderGoal, SenderGoal, Path, 2, 1, _) :-
-    generatePath(CurrentLocation, SenderGoal, Path, hueristic_move).
+    generatePath(CurrentLocation, SenderGoal, Path, heuristic_move).
 getPath(CurrentLocation, ReceiverGoal, SenderGoal, Path, 2, 1, Map) :-
-    generatePath(CurrentLocation, ReceiverGoal, P1, hueristic_move),
-    generatePath(ReceiverGoal, SenderGoal, P2, hueristic_move),
+    generatePath(CurrentLocation, ReceiverGoal, P1, heuristic_move),
+    generatePath(ReceiverGoal, SenderGoal, P2, heuristic_move),
     combinePath(P1, P2, Path),
     getPossibleReceiverMoves(Path, [], Map, RGL, 1, 1),
     member(ReceiverGoal, RGL).
@@ -166,7 +167,7 @@ generatePath(X, Y, [X|Path], MoveFunction) :-
     generatePathHelper(X, Y, Path, MoveFunction, L).
 
 generatePathHelper(_, _, _, _, 10) :- !, fail.
-generatePathHelper(X, X, [], hueristic_move, _) :- !.
+generatePathHelper(X, X, [], heuristic_move, _) :- !.
 generatePathHelper(X, X, [], _, _).
 generatePathHelper(X, X, [H|T], MoveFunction, L) :-
     check_length([H|T], MoveFunction),
@@ -196,7 +197,7 @@ manhattan_dist((CLX, CLY), (GX, GY), D) :-
     abs(GY - CLY, Y),
     D is X + Y.
 
-hueristic_move(C, N, G) :-
+heuristic_move(C, N, G) :-
     manhattan_dist(C, G, D),
     move(C, N, _),
     manhattan_dist(N, G, DN),
@@ -215,7 +216,7 @@ move((CLX, CLY), (CLX, NLY),_) :-
     NLY is CLY + 1,
     isLegalMove((CLX, NLY)).
 
-move((CLX, CLY), (CLY, NLY),_) :-
+move((CLX, CLY), (CLX, NLY),_) :-
     NLY is CLY - 1,
     isLegalMove((CLX, NLY)).
 
@@ -223,4 +224,4 @@ isLegalMove((X, Y)) :- member(X, [1,2,3]), member(Y, [1,2,3]).
 
 % Utils
 myCall(move, A, B, C) :- move(A, B, C).
-myCall(hueristic_move, A, B, C) :- hueristic_move(A, B, C).
+myCall(heuristic_move, A, B, C) :- heuristic_move(A, B, C).

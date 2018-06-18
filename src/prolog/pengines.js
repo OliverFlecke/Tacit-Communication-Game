@@ -25,7 +25,6 @@ catch (ex) {
 }
 
 function readFile(filepath) {
-    console.log(filepath);
     if (isNode) {
         return fs.readFileSync(filepath, { encoding: 'utf-8' });
     }
@@ -43,6 +42,7 @@ function readFile(filepath) {
 
 var program = readFile(filepath);
 
+// Add this to run from node/cmd
 // var $ = require('jquery')((new JSDOM(``)).window);
 
 /*  Copyright (c) 2014, Torbjörn Lager

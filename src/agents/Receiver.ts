@@ -39,9 +39,17 @@ export default class Receiver {
         console.log(`Receiver query: ${query}`);
 
         const formatAnswers = (result) => {
-            // console.log(result);
-            const x = result.data[0].args[0];
-            const y = result.data[0].args[1];
+            const answers = result.data[0];
+            // console.log('Receiver: ' + answers);
+
+            let answer;
+            if (Object.prototype.toString.call(answers) === '[object Array]') {
+                answer = answers[0];
+            } else {
+                answer = answers;
+            }
+            const x = answer.args[0];
+            const y = answer.args[1];
             const location = new Location(x, y);
 
             callback(location);

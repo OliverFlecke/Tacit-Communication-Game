@@ -32,13 +32,16 @@ export default class Sender {
         console.log(`Sender query: ${query}`);
 
         const formatResult = (result) => {
-            // console.log(result);
-            const locations = result.data[0].map(element => {
+            const answers: any[] = [].concat(result.data[0]);
+            // console.log('Sender: ' + answers[0].toString() + '\n' + query);
+
+            const locations = answers.map(element => {
                 const x = element.args[0];
                 const y = element.args[1];
                 return new Location(x, y);
             });
-            callback(Location.pathToActions(locations));
+            const path = Location.pathToActions(locations);
+            callback(path);
         }
 
         prolog.execute(query, formatResult);

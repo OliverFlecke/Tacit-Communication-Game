@@ -133,6 +133,11 @@ export default class Game {
                 break;
 
             case GameState.Failure:
+                console.log('ReceiverGoal: ' + this._round.receiverGoal
+                    + 'Receiver Location: ' + this._round.receiverLocation
+                    + 'SenderGoal: ' + this._round.senderGoal
+                    + 'Sender Location: ' + this._round.senderLocation
+                );
                 this._receiver.addError(Location.actionsToPath(this._round.senderPath), this._round.receiverLocation);
                 this._statistics.addFailure();
                 this._gameState = GameState.Finished;
@@ -146,8 +151,8 @@ export default class Game {
         // Let the agent take its move
         if (this._gameState === GameState.Sender && this.senderType !== PlayerType.Human) {
             const callback = (path) => {
-                console.log('Sending doing his action');
-                console.log(path);
+                // console.log('Sending doing his action');
+                // console.log(path);
                 if (this._ui) {
                     let i = 0;
                     const interval = setInterval(() => {
@@ -164,17 +169,20 @@ export default class Game {
                         this.updateLocation(action, Player.Sender);
                     }
                     this._gameState = GameState.SenderDone;
+                    this.endTurn();
                 }
             }
             this._sender.getPath(this._round, this.strategy, callback);
         }
         else if (this._gameState === GameState.Receiver && this.receiverType !== PlayerType.Human) {
             const callback = (location) => {
-                console.log(location.toString());
+                // console.log(location.toString());
                 this._position = location;
                 this._gameState = GameState.ReceiverDone;
                 if (this._ui) {
                     this._ui.forceUpdate();
+                } else {
+                    this.endTurn();
                 }
             }
             this._receiver.getMove(Location.actionsToPath(this._path), this.strategy, callback);
@@ -186,9 +194,6 @@ export default class Game {
         const round = Round.getUniqueRound(this.solvedRounds);
         this.reset(round);
         this.startRound();
-        this.endTurn();
-        this.endTurn();
-        this.update();
     }
 
     public startRound() {

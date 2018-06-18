@@ -20,9 +20,8 @@ describe('Simulating two agents playing against each other', () => {
 
     }, 0);
 
-    test('0-ToM sender and 0-ToM receiver', () => {
+    test.only('0-ToM sender and 1-ToM receiver', async () => {
         // Setup game
-        const rounds = 100;
         const senderType = PlayerType.ZeroOrder;
         const receiverType = PlayerType.FirstOrder;
         const strategy = Strategy.ShortestGoalPath;
@@ -38,28 +37,54 @@ describe('Simulating two agents playing against each other', () => {
         expect(game.receiverType).toEqual(receiverType);
         expect(game.strategy).toEqual(strategy);
 
+        const rounds = 100;
+        jest.setTimeout(rounds * 2000);
+
+        await sleep(2000);
+
         // Run simulations
         let roundsSinceLastSuccess = 0;
-        let i = 0;
-        // while (true) {
-        while (i < rounds) {
-            game.simulateRound();
-            if (game.numberOfSolvedRounds >= 81) { break; }
-            i++;
+        // tslint:disable-next-line:no-var-keyword
+        var counter = 0;
+        // tslint:disable-next-line:no-var-keyword
+        var active = false;
 
-            // Stop early if it looks like something have gone wrong
-            if (game.getFinalGameState() === GameState.Success) {
-                roundsSinceLastSuccess = 0;
+        // while (true) {
+        while (counter < rounds) {
+            if (game.numberOfSolvedRounds >= 81) { break; }
+
+            if (!active) {
+                game.simulateRound();
+                active = true;
+                counter++;
+
+                const interval = setInterval(() => {
+                    if (game.gameState === GameState.Finished) {
+                        active = false;
+
+                        // Stop early if it looks like something have gone wrong
+                        if (game.getFinalGameState() === GameState.Success) {
+                            roundsSinceLastSuccess = 0;
+                        }
+                        else {
+                            roundsSinceLastSuccess++;
+                        }
+                        if (roundsSinceLastSuccess > 100) {
+                            fail(`Simulation have failed 100 rounds in a row. Stopping...`);
+                        }
+                        clearInterval(interval);
+                    }
+                }, 10);
             }
-            else {
-                roundsSinceLastSuccess++;
-            }
-            if (roundsSinceLastSuccess > 100) {
-                fail(`Simulation have failed 100 rounds in a row. Stopping...`);
-            }
+
+            await sleep(100);
         }
 
         // Assert
         expect(game.numberOfSolvedRounds).toEqual(81);
     });
 });
+
+function sleep(ms) {
+    return new Promise(resolve => setTimeout(resolve, ms));
+}
