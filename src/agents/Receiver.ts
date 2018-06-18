@@ -36,7 +36,7 @@ export default class Receiver {
             this.mind + ", " +
             strategy + // Strategy
             ")";
-        console.log(`Receiver query: ${query}`);
+        // console.log(`Receiver query: ${query}`);
 
         const formatAnswers = (result) => {
             const answers = result.data[0];

@@ -91,7 +91,7 @@ getSenderMove(_, ReceiverGoal, SenderGoal, Path, _, _, Map) :-
 getSenderMove(C, ReceiverGoal, SenderGoal, Path, Order, Strategy, Map) :-
     getPathNotInMap(C, ReceiverGoal, SenderGoal, Path, Order, Strategy, Map), !.
 
-getSenderMove(CurrentLocation, ReceiverGoal, SenderGoal, Path, _, 1, _):-
+getSenderMove(CurrentLocation, ReceiverGoal, SenderGoal, Path, _, 1, Map):-
     % member({Path, RGX}, Map),
     % RGX \== ReceiverGoal,
     generatePath(CurrentLocation, ReceiverGoal, StartToReceiverPath, heuristic_move),
@@ -100,7 +100,8 @@ getSenderMove(CurrentLocation, ReceiverGoal, SenderGoal, Path, _, 1, _):-
     L>1,
     combinePath(StartToReceiverPath, ReceiverToReceiverPath, StartToReceiverTwicePath),
     generatePath(ReceiverGoal, SenderGoal, ReceiverToSenderPath, heuristic_move),
-    combinePath(StartToReceiverTwicePath, ReceiverToSenderPath, Path).
+    combinePath(StartToReceiverTwicePath, ReceiverToSenderPath, Path),
+    \+ member({Path, _}, Map).
 
 
 % Zero Order, Shortest Path(0),

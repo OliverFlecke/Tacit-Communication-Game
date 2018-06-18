@@ -29,7 +29,7 @@ export default class Sender {
             strategy + ', ' + //Strategy
             mapString + //Map
             ')';
-        console.log(`Sender query: ${query}`);
+        // console.log(`Sender query: ${query}`);
 
         const formatResult = (result) => {
             const answers: any[] = [].concat(result.data[0]);
