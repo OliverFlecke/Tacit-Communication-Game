@@ -145,28 +145,39 @@ export default class Game {
 
         // Let the agent take its move
         if (this._gameState === GameState.Sender && this.senderType !== PlayerType.Human) {
-            const path = this._sender.getPath(this._round, this.strategy);
-            if (this._ui) {
-                let i = 0;
-                const interval = setInterval(() => {
-                    const action = path[i++];
-                    this.updateLocation(action, Player.Sender);
-                    if (i > path.length) {
-                        clearInterval(interval);
-                        this._gameState = GameState.SenderDone;
-                    }
-                }, this._ui.refreshDelay);
-            }
-            else {
-                for (const action of path) {
-                    this.updateLocation(action, Player.Sender);
+            const callback = (path) => {
+                console.log('Sending doing his action');
+                console.log(path);
+                if (this._ui) {
+                    let i = 0;
+                    const interval = setInterval(() => {
+                        const action = path[i++];
+                        this.updateLocation(action, Player.Sender);
+                        if (i > path.length) {
+                            clearInterval(interval);
+                            this._gameState = GameState.SenderDone;
+                        }
+                    }, this._ui.refreshDelay);
                 }
-                this._gameState = GameState.SenderDone;
+                else {
+                    for (const action of path) {
+                        this.updateLocation(action, Player.Sender);
+                    }
+                    this._gameState = GameState.SenderDone;
+                }
             }
+            this._sender.getPath(this._round, this.strategy, callback);
         }
         else if (this._gameState === GameState.Receiver && this.receiverType !== PlayerType.Human) {
-            this._position = this._receiver.getMove(Location.actionsToPath(this._path), this.strategy);
-            this._gameState = GameState.ReceiverDone;
+            const callback = (location) => {
+                console.log(location.toString());
+                this._position = location;
+                this._gameState = GameState.ReceiverDone;
+                if (this._ui) {
+                    this._ui.forceUpdate();
+                }
+            }
+            this._receiver.getMove(Location.actionsToPath(this._path), this.strategy, callback);
         }
 
     }

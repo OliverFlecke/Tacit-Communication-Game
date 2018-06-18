@@ -48,7 +48,7 @@
     ],
     "forin": false,
     "no-unused-variable": [
-      true,
+      false,
       {
         "severity": "warning"
       }

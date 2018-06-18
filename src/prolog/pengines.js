@@ -1,14 +1,49 @@
+var $ = require('jquery');
 var jsdom = require('jsdom');
 const { JSDOM } = jsdom;
 const { document } = (new JSDOM('')).window;
+const { window } = new JSDOM('');
 global.document = document;
 
-const filepath = 'src/prolog/combinedAgents.pl';
-var fs = require('fs');
-var program = fs.readFileSync(filepath, { encoding: 'utf-8' });
-// console.log(program);
+try {
+    var filepath = require('./combinedAgents.pl');
+    var isNode = false;
+}
+catch (ex) {
+    // console.warn('Unable to load prolog directly. Most likely running in NodeJs');
+    var filepath = 'src/prolog/combinedAgents.pl';
+    isNode = true;
 
-var $ = require('jquery')((new JSDOM(``)).window);
+    try {
+        // To read files in nodeJS
+        var fs = require('fs');
+        var path = require('path');
+    }
+    catch (ex) {
+        // In GitHub Pages
+    }
+}
+
+function readFile(filepath) {
+    console.log(filepath);
+    if (isNode) {
+        return fs.readFileSync(filepath, { encoding: 'utf-8' });
+    }
+
+    console.log(filepath);
+    if (filepath.match('/static/media/')) {
+        var request = new XMLHttpRequest();
+        request.open('GET', filepath, false);
+        request.send(null);
+        return request.responseText;
+    }
+
+    return filepath;
+}
+
+var program = readFile(filepath);
+
+// var $ = require('jquery')((new JSDOM(``)).window);
 
 /*  Copyright (c) 2014, Torbjörn Lager
     All rights reserved.
@@ -697,9 +732,10 @@ Pengine.destroy_all = function (async) {
 var answers = [];
 function handleSuccess() {
     console.log('\nSuccess');
+    console.log(this.data);
     this.data.forEach(element => {
         answers.push(element);
-        // console.log(element);
+        console.log(element);
     });
 }
 
@@ -711,23 +747,21 @@ function handleError(event) {
 
 function handleCreate(data) {
     console.log('Created');
-    // console.log(data);
-    // pengine.ask('getSenderMove((2,2), (1, 1), (2, 2), X, 0, 1, [])', { template: 'X', chunk: 1 });
 }
 
-var pengine = new Pengine({
-    server: "http://pengines.swi-prolog.org/pengine",
-    src_text: program,
-    format: 'json',
-    oncreate: handleCreate,
-    onsuccess: handleSuccess,
-    onerror: handleError,
-});
+var pengine;
 
-exports.query = function query(query, options) {
-    pengine.ask(query, options);
-    return new Promise((resolve) => {
-        setTimeout(() => resolve(answers), 1000);
+exports.createPengine = function createPengine(callback) {
+    pengine = new Pengine({
+        server: "http://pengines.swi-prolog.org/pengine",
+        format: 'json',
+        destroy: false,
+        oncreate: handleCreate,
+        onsuccess: callback,
+        onerror: handleError,
     });
 }
 
+exports.query = function query(query, options) {
+    pengine.ask(query, options);
+}

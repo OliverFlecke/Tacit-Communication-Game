@@ -1,19 +1,15 @@
 import * as prolog from '../prolog';
-// import IAgent from './IAgent';
-import Agents from './Agents';
 import Location from '../models/Location';
 import LocationMap from '../models/LocationMap';
 import {
     locationsToPrologString,
     mapToPrologString,
-    stringToLocation
 } from '../models/Util';
 import PlayerType from '../models/PlayerType';
 import Strategy from '../game/Strategy';
 
 export default class Receiver {
 
-    private readonly agentType = Agents.Receiver;
     public mind = PlayerType.ZeroOrder;
 
     private errors: LocationMap<Set<Location>> = new LocationMap<Set<Location>>();
@@ -25,7 +21,8 @@ export default class Receiver {
     /**
      * Get the next location to move to
      */
-    public getMove(path: Location[], strategy: Strategy): Location {
+    public getMove(path: Location[], strategy: Strategy,
+            callback: (data: any) => void) {
         const pathString = locationsToPrologString(path);
         const errorsString = locationsToPrologString(Array.from(this.errors.get(path) || []));
         const mapString = mapToPrologString(this._successes);
@@ -38,13 +35,18 @@ export default class Receiver {
             "X, " +
             this.mind + ", " +
             strategy + // Strategy
-            ").";
+            ")";
         console.log(`Receiver query: ${query}`);
-        let answers = prolog.execute(this.agentType, query);
 
-        const answer: string = answers[0];
-        console.log(`Receiver answer: ${answer}`);
-        return stringToLocation(answer);
+        const formatAnswers = (result) => {
+            // console.log(result);
+            const x = result.data[0].args[0];
+            const y = result.data[0].args[1];
+            const location = new Location(x, y);
+
+            callback(location);
+        };
+        prolog.execute(query, formatAnswers);
     }
 
 
