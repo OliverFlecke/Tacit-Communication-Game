@@ -4,6 +4,7 @@ import LocationMap from '../models/LocationMap';
 import {
     locationsToPrologString,
     mapToPrologString,
+    mapOfLocationsToPrologString,
 } from '../models/Util';
 import PlayerType from '../models/PlayerType';
 import Strategy from '../game/Strategy';
@@ -12,7 +13,7 @@ export default class Receiver {
 
     public mind = PlayerType.ZeroOrder;
 
-    private errors: LocationMap<Set<Location>> = new LocationMap<Set<Location>>();
+    private errors: LocationMap<Location[]> = new LocationMap<Location[]>();
     private _successes: LocationMap<Location> = new LocationMap<Location>();
     public get successes() {
         return this._successes;
@@ -26,7 +27,8 @@ export default class Receiver {
     public getMove(path: Location[], strategy: Strategy,
             callback: (data: any) => void) {
         const pathString = locationsToPrologString(path);
-        const errorsString = locationsToPrologString(Array.from(this.errors.get(path) || []));
+        // const errorsString = locationsToPrologString(Array.from(this.errors.get(path) || []));
+        const errorsString = mapOfLocationsToPrologString(this.errors);
         const mapString = mapToPrologString(this._successes);
 
         // Create query
@@ -38,7 +40,7 @@ export default class Receiver {
             this.mind + ", " +
             strategy + // Strategy
             ")";
-        console.log(`Receiver this.query: ${this.query}`);
+        // console.log(`Receiver this.query: ${this.query}`);
 
         const formatAnswers = (result) => {
             const answers = result.data[0];
@@ -63,10 +65,10 @@ export default class Receiver {
     public addError(path: Location[], location: Location) {
         let set = this.errors.get(path);
         if (!set) {
-            set = new Set<Location>();
+            set = [];
             this.errors.set(path, set);
         }
-        set.add(location);
+        set.push(location);
     }
 
     public addSuccess(path: Location[], location: Location) {

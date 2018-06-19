@@ -14,6 +14,14 @@ export function mapToPrologString(map: LocationMap<Location>): string {
     return "[" + text.join(',') + "]";
 }
 
+export function mapOfLocationsToPrologString(map: LocationMap<Location[]>): string {
+    let text: string[] = [];
+    map.forEach((locations, path) => {
+        text.push('{' + locationsToPrologString(path) + ', ' + locationsToPrologString(locations) + '}');
+    });
+    return "[" + text.join(',') + "]";
+}
+
 export function stringToLocation(text: string) : Location {
     if (typeof text !== 'string') { return new Location(); }
 

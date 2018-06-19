@@ -31,7 +31,7 @@ export default class Sender {
             strategy + ', ' + //Strategy
             mapString + //Map
             ')';
-        console.log(`Sender this.query: ${this.query}`);
+        // console.log(`Sender this.query: ${this.query}`);
 
         const formatResult = (result) => {
             const answers: any[] = [].concat(result.data[0]);

@@ -102,6 +102,7 @@ export default class Game {
     }
 
     public update() {
+        const path = Location.actionsToPath(this._round.senderPath);
         switch (this._gameState) {
             case GameState.SenderDone:
                 this._round.senderLocation = this._position;
@@ -119,7 +120,6 @@ export default class Game {
                 break;
 
             case GameState.Success:
-                const path = Location.actionsToPath(this._round.senderPath);
                 this._receiver.addSuccess(path, this._round.receiverLocation);
                 this._sender.addSuccess(path, this._round.receiverLocation);
                 this._statistics.addSuccess();
@@ -134,13 +134,14 @@ export default class Game {
 
             case GameState.Failure:
                 console.log('ReceiverGoal: ' + this._round.receiverGoal
-                    + 'Receiver Location: ' + this._round.receiverLocation
-                    + 'SenderGoal: ' + this._round.senderGoal
-                    + 'Sender Location: ' + this._round.senderLocation
+                    + ' Receiver Location: ' + this._round.receiverLocation
+                    + ' SenderGoal: ' + this._round.senderGoal
+                    + ' Sender Location: ' + this._round.senderLocation
                     + '\nSender query: ' + this.sender.query
-                    + '\n\nReceiver query: ' + this.receiver.query
+                    + '\nReceiver query: ' + this.receiver.query
                 );
-                this._receiver.addError(Location.actionsToPath(this._round.senderPath), this._round.receiverLocation);
+                this._receiver.addError(path, this._round.receiverLocation);
+                this._sender.addSuccess(path, this._round.receiverGoal);
                 this._statistics.addFailure();
                 this._gameState = GameState.Finished;
                 this.updateUI();
