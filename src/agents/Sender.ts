@@ -17,11 +17,13 @@ export default class Sender {
 
     private _successes: LocationMap<Location> = new LocationMap<Location>();
 
+    public query: string = '';
+
     public getPath(round: Round, strategy: Strategy,
             callback: (data: any) => void) {
         const mapString = mapToPrologString(this._successes);
         //C, R, SG, P, OR, S, M
-        const query = 'getSenderMove((2,2), ' + //CurrentLocation
+        this.query = 'getSenderMove((2,2), ' + //CurrentLocation
             round.receiverGoal.toString() + ', ' + //ReceiverGoalLocation
             round.senderGoal.toString() + ', ' + //SenderGoalLocation
             'X, ' + //Path
@@ -29,11 +31,11 @@ export default class Sender {
             strategy + ', ' + //Strategy
             mapString + //Map
             ')';
-        // console.log(`Sender query: ${query}`);
+        console.log(`Sender this.query: ${this.query}`);
 
         const formatResult = (result) => {
             const answers: any[] = [].concat(result.data[0]);
-            // console.log('Sender: ' + answers[0].toString() + '\n' + query);
+            // console.log('Sender: ' + answers[0].toString() + '\n' + this.query);
 
             const locations = answers.map(element => {
                 const x = element.args[0];
@@ -44,7 +46,7 @@ export default class Sender {
             callback(path);
         }
 
-        prolog.execute(query, formatResult);
+        prolog.execute(this.query, formatResult);
     }
 
     public addSuccess(path: Location[], location: Location) {

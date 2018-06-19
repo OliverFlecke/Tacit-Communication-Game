@@ -18,6 +18,8 @@ export default class Receiver {
         return this._successes;
     }
 
+    public query: string = '';
+
     /**
      * Get the next location to move to
      */
@@ -28,7 +30,7 @@ export default class Receiver {
         const mapString = mapToPrologString(this._successes);
 
         // Create query
-        const query = "getReceiverMove(" +
+        this.query = "getReceiverMove(" +
             pathString + ", " +
             errorsString + ", " +
             mapString + ", " +
@@ -36,7 +38,7 @@ export default class Receiver {
             this.mind + ", " +
             strategy + // Strategy
             ")";
-        // console.log(`Receiver query: ${query}`);
+        console.log(`Receiver this.query: ${this.query}`);
 
         const formatAnswers = (result) => {
             const answers = result.data[0];
@@ -54,7 +56,7 @@ export default class Receiver {
 
             callback(location);
         };
-        prolog.execute(query, formatAnswers);
+        prolog.execute(this.query, formatAnswers);
     }
 
 

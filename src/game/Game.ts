@@ -137,6 +137,8 @@ export default class Game {
                     + 'Receiver Location: ' + this._round.receiverLocation
                     + 'SenderGoal: ' + this._round.senderGoal
                     + 'Sender Location: ' + this._round.senderLocation
+                    + '\nSender query: ' + this.sender.query
+                    + '\n\nReceiver query: ' + this.receiver.query
                 );
                 this._receiver.addError(Location.actionsToPath(this._round.senderPath), this._round.receiverLocation);
                 this._statistics.addFailure();

@@ -20,11 +20,11 @@ describe('Simulating two agents playing against each other', () => {
 
     }, 0);
 
-    test.only('0-ToM sender and 0-ToM receiver with shortest path', async () => {
+    test('0-ToM sender and 0-ToM receiver with shortest path', async () => {
         await simulation(PlayerType.ZeroOrder, PlayerType.ZeroOrder, Strategy.ShortestPath);
     });
 
-    test('0-ToM sender and 1-ToM receiver', async () => {
+    test.only('0-ToM sender and 1-ToM receiver', async () => {
         await simulation(PlayerType.ZeroOrder, PlayerType.FirstOrder, Strategy.ShortestGoalPath);
     });
 
@@ -41,7 +41,7 @@ describe('Simulating two agents playing against each other', () => {
         expect(game.receiverType).toEqual(receiverType);
         expect(game.strategy).toEqual(strategy);
 
-        const rounds = 1000;
+        const rounds = 200;
         jest.setTimeout(rounds * 2000);
 
         await sleep(2000);
@@ -59,6 +59,7 @@ describe('Simulating two agents playing against each other', () => {
 
             if (roundsSinceLastSuccess > 100) {
                 fail(`Simulation have failed 100 rounds in a row. Stopping...`);
+                break;
             }
 
             if (!active) {
