@@ -1,7 +1,7 @@
 enum Strategy {
     ShortestPath,
     ShortestGoalPath,
-    MinimizeCells,
+    UniquePath,
     Symmetry,
 }
 

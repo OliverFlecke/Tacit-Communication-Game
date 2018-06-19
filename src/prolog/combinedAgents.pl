@@ -38,8 +38,11 @@ getReceiverMove(Path, ErrorsMap, Map, ReceiverGoal, 1, Strategy):-
 getPossibleReceiverMoves(Path, _, Map, [X|[]], 0, _) :-
     member({Path, X}, Map).
 
+
+
 %Zero Order, Shortest Goal Path(1)
-getPossibleReceiverMoves(Path, ErrorsMap, _, ReceiverGoal, 0, 1) :-
+getPossibleReceiverMoves(Path, ErrorsMap, _, ReceiverGoal, 0, Strategy) :-
+    Strategy > 0,
     getErrors(Path, ErrorsMap, Errors),
     subtract(Path, Errors, ReceiverGoal).
 
@@ -49,7 +52,7 @@ getPossibleReceiverMoves(Path, ErrorsMap, _, ReceiverGoal, 0, 0) :-
     subtract([(1,1), (2,1), (3,1), (1,2), (2,2), (3,2), (1,3), (2,3), (3,3)], Errors, ReceiverGoal).
 
 %First Order, Shortest Path(0),
-getPossibleReceiverMoves([H|T], ErrorsMap, Map, ReceiverGoal, Order, Strategy) :-
+getPossibleReceiverMoves([H|T], ErrorsMap, Map, PossibleReceiverGoals, Order, Strategy) :-
     Order > 0,
     Path = [H|T],
     append(_, [SenderGoal], Path),
@@ -57,14 +60,9 @@ getPossibleReceiverMoves([H|T], ErrorsMap, Map, ReceiverGoal, Order, Strategy) :
     getErrors(Path, ErrorsMap, Errors),
     setof((X, Y), (isLegalMove((X, Y)), getSenderMove(H, (X, Y), SenderGoal, [H|T], Temp, Strategy, Map)), RGL),
     findall(X, (member(X, RGL), \+ filter(X, SenderGoal, Map)), FilteredGoals),
-    subtract(FilteredGoals, Errors, TempGoals),
-    (same_length(TempGoals, []) ->
-        fail
-        % delete(ErrorsMap, {Path, _}, CleanedErrorMap),
-        % getPossibleReceiverMoves([H|T], CleanedErrorMap, Map, ReceiverGoal, Order, Strategy)
-        ;
-        ReceiverGoal = TempGoals
-    ).
+    subtract(FilteredGoals, Errors, PossibleReceiverGoals),
+    \+ same_length(PossibleReceiverGoals, []).
+
 %First Order, Shortest Path(0),
 getPossibleReceiverMoves([H|T], ErrorsMap, Map, ReceiverGoal, Order, Strategy) :-
     Order > 0,
@@ -104,7 +102,7 @@ getSenderMove(C, ReceiverGoal, SenderGoal, Path, Order, Strategy, Map) :-
 
 % Wiggle
 getSenderMove(CurrentLocation, ReceiverGoal, SenderGoal, Path, Order, Strategy, Map) :-
-    Strategy >= 1,
+    Strategy > 0,
     getWigglePath(CurrentLocation, ReceiverGoal, SenderGoal, Path, Order, Strategy, Map).
 
 getWigglePath(CurrentLocation, ReceiverGoal, SenderGoal, Path, _, 1, Map) :-
@@ -122,12 +120,15 @@ getWigglePath(CurrentLocation, ReceiverGoal, SenderGoal, Path, _, 1, Map) :-
 
 getWigglePath(CurrentLocation, ReceiverGoal, SenderGoal, Path, _, 2, Map) :-
     generatePath(CurrentLocation, ReceiverGoal, StartToReceiverPath, unique_move),
-    generatePath(ReceiverGoal, ReceiverGoal, ReceiverToReceiverPath, unique_move),
+    generatePath(ReceiverGoal, ReceiverGoal, ReceiverToReceiverPath, unique_move(StartToReceiverPath)),
     length(ReceiverToReceiverPath, L),
     L > 1,
     combinePath(StartToReceiverPath, ReceiverToReceiverPath, StartToReceiverTwicePath),
-    generatePath(ReceiverGoal, SenderGoal, ReceiverToSenderPath, unique_move),
+    generatePath(ReceiverGoal, SenderGoal, ReceiverToSenderPath, unique_move(StartToReceiverTwicePath)),
     combinePath(StartToReceiverTwicePath, ReceiverToSenderPath, Path),
+    combinePath(StartToReceiverPath, ReceiverToSenderPath, TestPath),
+    member({TestPath, NotRG}, Map),
+    NotRG \== ReceiverGoal,
     uniquePath(Path, Map), !.
 
 
@@ -174,26 +175,26 @@ getPath(CurrentLocation, ReceiverGoal, SenderGoal, Path, 2, 1, Map) :-
     getPossibleReceiverMoves(Path, [], Map, RGL, 1, 1),
     member(ReceiverGoal, RGL).
 
-% Zero Order, Unique Path(1),
+% Zero Order, Unique Path(2),
 getPath(CurrentLocation, ReceiverGoal, SenderGoal, Path, 0, 2, _) :-
-        generatePath(CurrentLocation, ReceiverGoal, P1, unique_move),
-        generatePath(ReceiverGoal, SenderGoal, P2, unique_move),
-        combinePath(P1, P2, Path).
+    generatePath(CurrentLocation, ReceiverGoal, P1, unique_move),
+    generatePath(ReceiverGoal, SenderGoal, P2, unique_move(P1)),
+    combinePath(P1, P2, Path).
 
-    % 1st Order, Shortest Goal Path(1)
+% 1st Order, Unique Path(2)
 getPath(CurrentLocation, SenderGoal, SenderGoal, Path, 1, 2, _) :-
     generatePath(CurrentLocation, SenderGoal, Path, unique_move).
 getPath(CurrentLocation, ReceiverGoal, SenderGoal, Path, 1, 2, Map) :-
     generatePath(CurrentLocation, ReceiverGoal, P1 , unique_move),
-    generatePath(ReceiverGoal, SenderGoal, P2 , unique_move),
+    generatePath(ReceiverGoal, SenderGoal, P2 , unique_move(P1)),
     combinePath(P1, P2, Path),
     getPossibleReceiverMoves(Path, [], Map, RGL, 0, 2),
     member(ReceiverGoal, RGL).
 
-% 2nd Order, Unique path
+% 2nd Order, Unique path(2)
 getPath(CurrentLocation, ReceiverGoal, SenderGoal, Path, 2, 2, Map) :-
     generatePath(CurrentLocation, ReceiverGoal, P1, unique_move),
-    generatePath(ReceiverGoal, SenderGoal, P2, unique_move),
+    generatePath(ReceiverGoal, SenderGoal, P2, unique_move(P1)),
     combinePath(P1, P2, Path),
     getPossibleReceiverMoves(Path, [], Map, RGL, 1, 2),
     member(ReceiverGoal, RGL).
@@ -214,24 +215,15 @@ check_length([_, _, _, _], MoveFunction) :- MoveFunction \== move.
 check_length([_, _, _, _, _], MoveFunction) :- MoveFunction \== move.
 
 generatePath(X, X, [X], _).
-generatePath(X, Y, [X|Path], MoveFunction) :-
-    (var(Path) -> L is 0 ; length(Path, L)),
-    generatePathHelper(X, Y, Path, MoveFunction, L).
+generatePath(X, Y, [X|Path], MoveFunction) :- generatePathHelper(X, Y, Path, MoveFunction).
 
-generatePathHelper(_, _, _, _, 10) :- !, fail.
-generatePathHelper(X, X, [], heuristic_move, _) :- !.
-generatePathHelper(X, X, [], _, _).
-% generatePathHelper(X, X, [H|T], MoveFunction, L) :-
-%     check_length([H|T], MoveFunction),
-%     findall(J, move(X, J, X, _), ResultList),
-%     member(H, ResultList),
-%     generatePathHelper(H, X, T, MoveFunction, L + 1).
-generatePathHelper(X, Y, [H|T], MoveFunction, L) :-
+generatePathHelper(X, X, [], heuristic_move) :- !.
+generatePathHelper(X, X, [], _).
+generatePathHelper(X, Y, [H|T], MoveFunction) :-
     check_length([H|T], MoveFunction),
     findall(J, myCall(MoveFunction, X, J, Y, [H|T]), ResultList),
     member(H, ResultList),
-    generatePathHelper(H, Y, T, MoveFunction, L + 1).
-
+    generatePathHelper(H, Y, T, MoveFunction).
 
 abs(X, Y) :- X < 0, Y is -X, !.
 abs(X, X).
@@ -276,12 +268,17 @@ unique_move(CurrentLocation, NextLocation, GoalLocation, Path) :-
     heuristic_move(CurrentLocation, NextLocation, GoalLocation, _),
     member(NextLocation, Path), !.
 unique_move(CurrentLocation, NextLocation, GoalLocation, _) :-
-    heuristic_move(CurrentLocation, NextLocation, GoalLocation, _).
-
+    heuristic_move(CurrentLocation, NextLocation, GoalLocation, _), !.
+unique_move(CurrentLocation, NextLocation, GoalLocation, Path) :-
+    move(CurrentLocation, NextLocation, GoalLocation, _),
+    member(NextLocation, Path).
 
 isLegalMove((X, Y)) :- member(X, [1,2,3]), member(Y, [1,2,3]).
 
 % Utils
 myCall(move, A, B, C, P) :- move(A, B, C, P).
 myCall(heuristic_move, A, B, C, P) :- heuristic_move(A, B, C, P).
-myCall(unique_move, A, B, C, P) :- unique_move(A, B, C, P).
+% myCall(unique_move, A, B, C, P) :- unique_move(A, B, C, P).
+myCall(unique_move, A, B, C, _) :- unique_move(A, B, C, []).
+myCall(unique_move(P), A, B, C, _) :- unique_move(A, B, C, P), !.
+% myCall(unique_move(_), A, B, C, P) :- unique_move(A, B, C, P).

@@ -133,16 +133,18 @@ export default class Game {
                 break;
 
             case GameState.Failure:
-                console.log('ReceiverGoal: ' + this._round.receiverGoal
+                this._receiver.addError(path, this._round.receiverLocation);
+                this._sender.addSuccess(path, this._round.receiverGoal);
+                this._statistics.addFailure();
+                console.log('Number of failures: ' + this._statistics.failures
+                    + ' Number of successes: ' + this._statistics.successes
+                    + '\nReceiverGoal: ' + this._round.receiverGoal
                     + ' Receiver Location: ' + this._round.receiverLocation
                     + ' SenderGoal: ' + this._round.senderGoal
                     + ' Sender Location: ' + this._round.senderLocation
                     + '\nSender query: ' + this.sender.query
                     + '\nReceiver query: ' + this.receiver.query
                 );
-                this._receiver.addError(path, this._round.receiverLocation);
-                this._sender.addSuccess(path, this._round.receiverGoal);
-                this._statistics.addFailure();
                 this._gameState = GameState.Finished;
                 this.updateUI();
                 break;
@@ -153,22 +155,22 @@ export default class Game {
 
         // Let the agent take its move
         if (this._gameState === GameState.Sender && this.senderType !== PlayerType.Human) {
-            const callback = (path) => {
+            const callback = (senderPath) => {
                 // console.log('Sending doing his action');
-                // console.log(path);
+                // console.log(senderPath);
                 if (this._ui) {
                     let i = 0;
                     const interval = setInterval(() => {
-                        const action = path[i++];
+                        const action = senderPath[i++];
                         this.updateLocation(action, Player.Sender);
-                        if (i > path.length) {
+                        if (i > senderPath.length) {
                             clearInterval(interval);
                             this._gameState = GameState.SenderDone;
                         }
                     }, this._ui.refreshDelay);
                 }
                 else {
-                    for (const action of path) {
+                    for (const action of senderPath) {
                         this.updateLocation(action, Player.Sender);
                     }
                     this._gameState = GameState.SenderDone;

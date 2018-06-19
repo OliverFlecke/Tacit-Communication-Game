@@ -24,8 +24,11 @@ describe('Simulating two agents playing against each other', () => {
         await simulation(PlayerType.ZeroOrder, PlayerType.ZeroOrder, Strategy.ShortestPath);
     });
 
-    test.only('0-ToM sender and 1-ToM receiver', async () => {
+    test('0-ToM sender and 1-ToM receiver', async () => {
         await simulation(PlayerType.ZeroOrder, PlayerType.FirstOrder, Strategy.ShortestGoalPath);
+    });
+    test.only('0-ToM sender and 1-ToM receiver unique path', async () => {
+        await simulation(PlayerType.ZeroOrder, PlayerType.FirstOrder, Strategy.UniquePath);
     });
 
     async function simulation(senderType: PlayerType, receiverType: PlayerType, strategy: Strategy) {
