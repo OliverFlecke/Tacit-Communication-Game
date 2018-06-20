@@ -3,6 +3,7 @@ import Statistics from '../src/models/Statistics';
 import PlayerType from '../src/models/PlayerType';
 import GameState from '../src/models/GameState';
 import Strategy from '../src/game/Strategy';
+import Setting from '../src/game/Setting';
 
 describe('Simulating two agents playing against each other', () => {
     let game: Game;
@@ -15,23 +16,37 @@ describe('Simulating two agents playing against each other', () => {
         // Display simulation results
         const stats: Statistics = game.statistics;
         const numRounds = stats.failures + stats.successes;
-        console.log(`Number of rounds: ${numRounds} \tSuccesses: ${stats.successes} \tFailures: ${stats.failures}`);
-        console.log(`Receiver map of successes: ${game.numberOfSolvedRounds}`)
+        console.log(`Sender: ${game.receiverType} \tReceiver: ${game.receiverType}`
+            + `\nNumber of rounds: ${numRounds} \tSuccesses: ${stats.successes} \tFailures: ${stats.failures}`
+            + `\nReceiver map of successes: ${game.numberOfSolvedRounds}`
+        );
 
     }, 0);
 
-    test('0-ToM sender and 0-ToM receiver with shortest path', async () => {
+    test.only('0-ToM sender and 0-ToM receiver with shortest path', async () => {
         await simulation(PlayerType.ZeroOrder, PlayerType.ZeroOrder, Strategy.ShortestPath);
     });
 
     test('0-ToM sender and 1-ToM receiver', async () => {
         await simulation(PlayerType.ZeroOrder, PlayerType.FirstOrder, Strategy.ShortestGoalPath);
     });
-    test.only('0-ToM sender and 1-ToM receiver unique path', async () => {
+    test('0-ToM sender and 1-ToM receiver unique path', async () => {
         await simulation(PlayerType.ZeroOrder, PlayerType.FirstOrder, Strategy.UniquePath);
     });
 
-    async function simulation(senderType: PlayerType, receiverType: PlayerType, strategy: Strategy) {
+    test('1-ToM sender and 2-ToM receiver, shortest goal path', async () => {
+        await simulation(PlayerType.FirstOrder, PlayerType.SecondOrder, Strategy.ShortestGoalPath);
+    });
+
+    test('2-ToM sender and 2-ToM receiver, shortest goal path', async () => {
+        await simulation(PlayerType.SecondOrder, PlayerType.SecondOrder, Strategy.UniquePath);
+    });
+
+    test('2-ToM sender and 1-ToM receiver, shortest goal path', async () => {
+        await simulation(PlayerType.SecondOrder, PlayerType.FirstOrder, Strategy.ShortestGoalPath);
+    });
+
+    async function simulation(senderType: PlayerType, receiverType: PlayerType, strategy: Strategy, setting = Setting.All) {
         // Setup game
         game.senderType = senderType;
         game.receiverType = receiverType;
@@ -44,7 +59,7 @@ describe('Simulating two agents playing against each other', () => {
         expect(game.receiverType).toEqual(receiverType);
         expect(game.strategy).toEqual(strategy);
 
-        const rounds = 200;
+        const rounds = 1000;
         jest.setTimeout(rounds * 2000);
 
         await sleep(2000);
@@ -66,7 +81,7 @@ describe('Simulating two agents playing against each other', () => {
             }
 
             if (!active) {
-                game.simulateRound();
+                game.simulateRound(setting);
                 active = true;
                 counter++;
 

@@ -9,6 +9,7 @@ import Action from '../models/Action';
 import Player from '../models/Player';
 import IUI from '../UI/IUI';
 import Strategy from './Strategy';
+import Setting from './Setting';
 
 export default class Game {
 
@@ -91,13 +92,12 @@ export default class Game {
 
     /**
      * Generate a new round of the game
-     * @returns A game state
      */
-    public reset(round?: Round) {
+    public reset(setting?: Setting) {
         this._gameState = GameState.Initial;
         this._position = new Location();
         this._path = [];
-        this._round = round ? round : Round.getUniqueRound(this.solvedRounds);
+        this._round = Round.getUniqueRound(this.solvedRounds, setting);
         this.updateUI();
     }
 
@@ -195,9 +195,8 @@ export default class Game {
 
     }
 
-    public simulateRound() {
-        const round = Round.getUniqueRound(this.solvedRounds);
-        this.reset(round);
+    public simulateRound(setting: Setting) {
+        this.reset(setting);
         this.startRound();
     }
 

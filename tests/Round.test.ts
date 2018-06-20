@@ -1,5 +1,6 @@
 import Round from "../src/models/Round";
 import Location from "../src/models/Location";
+import Setting from "../src/game/Setting";
 
 describe('Test how rounds work', () => {
     test('can compare two rounds base on the goal location', () => {
@@ -50,5 +51,17 @@ describe('Test how rounds work', () => {
 
         // Assert
         expect(Round.equals(newRound, round)).toBeTruthy();
+    });
+
+});
+
+describe('Generate rounds following the simple setting', () => {
+    test.only('There should only be 56 rounds', () => {
+        const rounds = Round.generateUniqueRounds([], Setting.NoMiddleNotSame);
+        expect(rounds.length).toEqual(56);
+        expect(rounds).not.toContainEqual(new Round(new Location(2, 2), new Location(2, 2)));
+        expect(rounds).not.toContainEqual(new Round(new Location(2, 2), new Location(1, 1)));
+        expect(rounds).not.toContainEqual(new Round(new Location(1, 1), new Location(1, 1)));
+        expect(rounds).not.toContainEqual(new Round(new Location(1, 1), new Location(2, 2)));
     });
 });

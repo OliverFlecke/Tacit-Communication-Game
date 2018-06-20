@@ -1,5 +1,6 @@
 import Location from './Location';
 import Action from './Action';
+import Setting from '../game/Setting';
 
 /**
  * Represents a round of the Tacit Communication Game
@@ -64,8 +65,8 @@ export default class Round {
             && Location.equals(a.receiverGoal, b.receiverGoal);
     }
 
-    public static getUniqueRound(rounds?: Round[]): Round {
-        const allRounds = Round.generateUniqueRounds(rounds);
+    public static getUniqueRound(rounds?: Round[], setting?: Setting): Round {
+        const allRounds = Round.generateUniqueRounds(rounds, setting);
         return allRounds[Math.floor(Math.random() * allRounds.length)];
     }
 
@@ -75,13 +76,18 @@ export default class Round {
      * @param rounds Rounds that should not be generated
      * @returns All the unique rounds, which is not in rounds
      */
-    public static generateUniqueRounds(rounds?: Round[]): Round[] {
+    public static generateUniqueRounds(rounds?: Round[], setting: Setting = Setting.All): Round[] {
         let allRounds: Round[] = [];
 
         for (let sx = 1; sx <= 3; sx++) {
             for (let sy = 1; sy <= 3; sy++) {
                 for (let rx = 1; rx <= 3; rx++) {
                     for (let ry = 1; ry <= 3; ry++) {
+                        if (setting === Setting.NoMiddleNotSame) {
+                            if (sx === 2 && sy === 2) continue;
+                            if (rx === 2 && ry === 2) continue;
+                            if (sx === rx && sy === ry) continue;
+                        }
                         allRounds = allRounds.concat(new Round(new Location(sx, sy), new Location(rx, ry)));
                     }
                 }
