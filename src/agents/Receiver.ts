@@ -40,7 +40,7 @@ export default class Receiver {
             this.mind + ", " +
             strategy + // Strategy
             ")";
-        console.log(`Receiver query: ${this.query}`);
+        // console.log(`Receiver query: ${this.query}`);
 
         const formatAnswers = (result) => {
             const answers = result.data[0];

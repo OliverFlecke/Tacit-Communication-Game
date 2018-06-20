@@ -136,15 +136,7 @@ export default class Game {
                 this._receiver.addError(path, this._round.receiverLocation);
                 this._sender.addSuccess(path, this._round.receiverGoal);
                 this._statistics.addFailure();
-                console.log('Number of failures: ' + this._statistics.failures
-                    + ' Number of successes: ' + this._statistics.successes
-                    + '\nReceiverGoal: ' + this._round.receiverGoal
-                    + ' Receiver Location: ' + this._round.receiverLocation
-                    + ' SenderGoal: ' + this._round.senderGoal
-                    + ' Sender Location: ' + this._round.senderLocation
-                    + '\nSender query: ' + this.sender.query
-                    + '\nReceiver query: ' + this.receiver.query
-                );
+                // this.logRoundStatistics();
                 this._gameState = GameState.Finished;
                 this.updateUI();
                 break;
@@ -156,8 +148,6 @@ export default class Game {
         // Let the agent take its move
         if (this._gameState === GameState.Sender && this.senderType !== PlayerType.Human) {
             const callback = (senderPath) => {
-                // console.log('Sending doing his action');
-                // console.log(senderPath);
                 if (this._ui) {
                     let i = 0;
                     const interval = setInterval(() => {
@@ -181,7 +171,6 @@ export default class Game {
         }
         else if (this._gameState === GameState.Receiver && this.receiverType !== PlayerType.Human) {
             const callback = (location) => {
-                // console.log(location.toString());
                 this._position = location;
                 this._gameState = GameState.ReceiverDone;
                 if (this._ui) {
@@ -193,6 +182,17 @@ export default class Game {
             this._receiver.getMove(Location.actionsToPath(this._path), this.strategy, callback);
         }
 
+    }
+
+    private logRoundStatistics() {
+        console.log('Number of failures: ' + this._statistics.failures
+            + ' Number of successes: ' + this._statistics.successes
+            + '\nReceiverGoal: ' + this._round.receiverGoal
+            + ' Receiver Location: ' + this._round.receiverLocation
+            + ' SenderGoal: ' + this._round.senderGoal
+            + ' Sender Location: ' + this._round.senderLocation
+            + '\nSender query: ' + this.sender.query
+            + '\nReceiver query: ' + this.receiver.query);
     }
 
     public simulateRound(setting: Setting) {

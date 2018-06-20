@@ -14,16 +14,11 @@ describe('Simulating two agents playing against each other', () => {
 
     afterEach(() => {
         // Display simulation results
-        const stats: Statistics = game.statistics;
-        const numRounds = stats.failures + stats.successes;
-        console.log(`Sender: ${game.receiverType} \tReceiver: ${game.receiverType}`
-            + `\nNumber of rounds: ${numRounds} \tSuccesses: ${stats.successes} \tFailures: ${stats.failures}`
-            + `\nReceiver map of successes: ${game.numberOfSolvedRounds}`
-        );
+        printStatistics(game);
 
     }, 0);
 
-    test.only('0-ToM sender and 0-ToM receiver with shortest path', async () => {
+    test('0-ToM sender and 0-ToM receiver with shortest path', async () => {
         await simulation(PlayerType.ZeroOrder, PlayerType.ZeroOrder, Strategy.ShortestPath);
     });
 
@@ -45,6 +40,24 @@ describe('Simulating two agents playing against each other', () => {
     test('2-ToM sender and 1-ToM receiver, shortest goal path', async () => {
         await simulation(PlayerType.SecondOrder, PlayerType.FirstOrder, Strategy.ShortestGoalPath);
     });
+
+    test.only('Running multiple simulations', async () => {
+        await runMultipleSimulations(PlayerType.ZeroOrder, PlayerType.SecondOrder, Strategy.ShortestPath);
+    })
+
+    async function runMultipleSimulations(sender: PlayerType, receiver: PlayerType, strategy: Strategy, count: number = 10) {
+        const results = [];
+        let i = 1;
+        while (i <= count) {
+            console.log(`Simulation ${i}`);
+            game = new Game();
+            await simulation(sender, receiver, strategy);
+            results.push(game.statistics.failures);
+            printStatistics(game);
+            i++;
+        }
+        console.log(results);
+    }
 
     async function simulation(senderType: PlayerType, receiverType: PlayerType, strategy: Strategy, setting = Setting.All) {
         // Setup game
@@ -109,6 +122,14 @@ describe('Simulating two agents playing against each other', () => {
         expect(game.numberOfSolvedRounds).toEqual(81);
     });
 });
+
+function printStatistics(game: Game) {
+    const stats: Statistics = game.statistics;
+    const numRounds = stats.failures + stats.successes;
+    console.log(`Sender: ${game.senderType} \tReceiver: ${game.receiverType}`
+        + `\nNumber of rounds: ${numRounds} \tSuccesses: ${stats.successes} \tFailures: ${stats.failures}`
+        + `\nReceiver map of successes: ${game.numberOfSolvedRounds}`);
+}
 
 function sleep(ms) {
     return new Promise(resolve => setTimeout(resolve, ms));
