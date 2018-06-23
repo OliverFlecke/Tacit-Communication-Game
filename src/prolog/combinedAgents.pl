@@ -20,10 +20,10 @@ appendMap(Map, Path, [H|T], OutMap) :-
     append([{Path, H}], NewMap, OutMap).
 
 % To controll which setting should be in use. Only one of the following predicates should be added
-alternativeSetting(PossibleGoals, Path, PossibleGoals).
-% alternativeSetting(PossibleGoals, Path, FilteredGoals) :-
-%     append(_, [SenderGoal], Path),
-%     subtract(PossibleGoals, [(2,2), SenderGoal], FilteredGoals).
+% alternativeSetting(PossibleGoals, Path, PossibleGoals).
+alternativeSetting(PossibleGoals, Path, FilteredGoals) :-
+    append(_, [SenderGoal], Path),
+    subtract(PossibleGoals, [(2,2), SenderGoal], FilteredGoals).
 
 %Receiver
 %Params: Path, ErrorsMap, Map, Result, Order, Strategy

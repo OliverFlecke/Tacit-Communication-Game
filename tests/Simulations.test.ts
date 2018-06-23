@@ -4,6 +4,7 @@ import PlayerType from '../src/models/PlayerType';
 import GameState from '../src/models/GameState';
 import Strategy from '../src/game/Strategy';
 import Setting from '../src/game/Setting';
+import * as util from './util';
 
 describe('Simulating two agents playing against each other', () => {
     let game: Game;
@@ -42,21 +43,31 @@ describe('Simulating two agents playing against each other', () => {
     });
 
     test.only('Running multiple simulations', async () => {
-        await runMultipleSimulations(PlayerType.ZeroOrder, PlayerType.SecondOrder, Strategy.ShortestPath);
+        jest.setTimeout(2147483647);
+        for (let strategy = 1; strategy <= 1; strategy++) {
+            for (let sender = 0; sender <= 2; sender++) {
+                for (let receiver = 0; receiver <= 2; receiver++) {
+                    await runMultipleSimulations(sender, receiver, 2);
+                }
+            }
+        }
+        // await runMultipleSimulations(2, 2, Strategy.ShortestPath);
     })
 
     async function runMultipleSimulations(sender: PlayerType, receiver: PlayerType, strategy: Strategy, count: number = 10) {
         const results = [];
         let i = 1;
         while (i <= count) {
-            console.log(`Simulation ${i}`);
+            // console.log(`Simulation ${i}`);
             game = new Game();
-            await simulation(sender, receiver, strategy);
+            await simulation(sender, receiver, strategy, Setting.NoMiddleNotSame);
             results.push(game.statistics.failures);
-            printStatistics(game);
+            // printStatistics(game);
             i++;
         }
-        console.log(results);
+        const average = util.mean(results);
+        const standardError = util.standardError(results);
+        console.log(`S${sender}R${receiver}: [${results}] (${average}) (${standardError})`);
     }
 
     async function simulation(senderType: PlayerType, receiverType: PlayerType, strategy: Strategy, setting = Setting.All) {
@@ -73,7 +84,7 @@ describe('Simulating two agents playing against each other', () => {
         expect(game.strategy).toEqual(strategy);
 
         const rounds = 1000;
-        jest.setTimeout(rounds * 2000);
+        // jest.setTimeout(rounds * 2000);
 
         await sleep(2000);
 
@@ -86,7 +97,11 @@ describe('Simulating two agents playing against each other', () => {
 
         // while (true) {
         while (counter < rounds) {
-            if (game.numberOfSolvedRounds >= 81) { break; }
+            if (setting === Setting.All) {
+                if (game.numberOfSolvedRounds >= 81) { break; }
+            } else if (setting === Setting.NoMiddleNotSame) {
+                if (game.numberOfSolvedRounds >= 56) { break; }
+            }
 
             if (roundsSinceLastSuccess > 100) {
                 fail(`Simulation have failed 100 rounds in a row. Stopping...`);
@@ -119,7 +134,8 @@ describe('Simulating two agents playing against each other', () => {
         }
 
         // Assert
-        expect(game.numberOfSolvedRounds).toEqual(81);
+        if (setting === Setting.All) expect(game.numberOfSolvedRounds).toEqual(81);
+        if (setting === Setting.NoMiddleNotSame) expect(game.numberOfSolvedRounds).toEqual(56);
     });
 });
 
